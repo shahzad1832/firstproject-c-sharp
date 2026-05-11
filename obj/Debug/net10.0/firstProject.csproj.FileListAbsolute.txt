@@ -134,3 +134,4 @@ d:\firstProject\bin\Debug\net10.0\System.Drawing.Common.dll
 d:\firstProject\bin\Debug\net10.0\System.Private.Windows.Core.dll
 d:\firstProject\bin\Debug\net10.0\System.Private.Windows.GdiPlus.dll
 d:\firstProject\bin\Debug\net10.0\runtimes\win\lib\net10.0\Microsoft.Win32.SystemEvents.dll
+d:\firstProject\obj\Debug\net10.0\firstProject.sourcelink.json
