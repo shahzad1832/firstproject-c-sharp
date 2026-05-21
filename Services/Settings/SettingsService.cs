@@ -18,22 +18,32 @@ public sealed class SettingsService
 
     public AppSettings Load()
     {
+        AppSettings settings;
+
         if (!File.Exists(_settingsPath))
         {
-            var defaults = new AppSettings();
-            Save(defaults);
-            return defaults;
+            settings = new AppSettings();
+            EnsureDeviceId(settings);
+            Save(settings);
+            return settings;
         }
 
         try
         {
             string json = File.ReadAllText(_settingsPath);
-            return JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
+            settings = JsonSerializer.Deserialize<AppSettings>(json) ?? new AppSettings();
         }
         catch
         {
-            return new AppSettings();
+            settings = new AppSettings();
         }
+
+        if (EnsureDeviceId(settings))
+        {
+            Save(settings);
+        }
+
+        return settings;
     }
 
     public void Save(AppSettings settings)
@@ -41,5 +51,16 @@ public sealed class SettingsService
         var options = new JsonSerializerOptions { WriteIndented = true };
         string json = JsonSerializer.Serialize(settings, options);
         File.WriteAllText(_settingsPath, json);
+    }
+
+    private static bool EnsureDeviceId(AppSettings settings)
+    {
+        if (!string.IsNullOrWhiteSpace(settings.DeviceId))
+        {
+            return false;
+        }
+
+        settings.DeviceId = Guid.NewGuid().ToString("N");
+        return true;
     }
 }

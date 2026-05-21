@@ -8,6 +8,10 @@ namespace firstProject.Models;
 public class ActivityRecord
 {
     public int Id { get; set; }           // Unique ID
+    public string? OrganizationId { get; set; }
+    public string? EmployeeId { get; set; }
+    public string? DeviceId { get; set; }
+    public string RecordType { get; set; } = "Activity";
     public  string? AppNames { get; set; }   // App ka naam (e.g. Chrome)
     public DateTime StartTime { get; set; } 
     public DateTime EndTime { get; set; }

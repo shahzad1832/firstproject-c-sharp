@@ -1,2 +1,11 @@
-/bin/
 bin/
+obj/
+
+.DS_Store
+
+*.db
+*.db-shm
+*.db-wal
+
+Screenshots/
+*.png

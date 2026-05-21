@@ -3,83 +3,303 @@
         xmlns:vm="clr-namespace:firstProject.ViewModels"
         xmlns:models="clr-namespace:firstProject.Models"
         xmlns:converters="clr-namespace:firstProject.Converters"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d"
         x:Class="firstProject.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Title="firstProject">
+        Title="Assign In"
+        Width="300"
+        Height="560"
+        MinWidth="300"
+        MinHeight="560"
+        Background="#F2F2F4"
+        ExtendClientAreaToDecorationsHint="False">
 
     <Window.Resources>
         <converters:PathToBitmapConverter x:Key="PathToBitmapConverter"/>
+
+        <SolidColorBrush x:Key="PurpleBrush" Color="#7C68B5"/>
+        <SolidColorBrush x:Key="TealBrush" Color="#2FB7A8"/>
+        <SolidColorBrush x:Key="TextBrush" Color="#333743"/>
+        <SolidColorBrush x:Key="MutedBrush" Color="#7B7E89"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="#F8F8FA"/>
     </Window.Resources>
 
-    <Design.DataContext>
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
-   
-  <Grid RowDefinitions="Auto, Auto, *">
-    
-    <!-- Row 0: Current Tracking -->
-    <StackPanel Grid.Row="0" Margin="10">
-        <TextBlock Text="Current Window:" Foreground="Gray"/>
-        <TextBlock Text="{Binding CurrentWindowTitle}" FontSize="20" FontWeight="Bold"/>
-        <TextBlock Text="{Binding StatusMessage}" Foreground="DarkRed" Margin="0,6,0,0"/>
-        <TextBlock Text="{Binding TodayTotalTime, StringFormat='Today: {0}'}" Foreground="DarkGreen" Margin="0,6,0,0"/>
-        <TextBlock Text="{Binding IdleTotalTime, StringFormat='Idle: {0}'}" Foreground="DarkOrange" Margin="0,4,0,0"/>
-    </StackPanel>
+    <Window.Styles>
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
 
-        <!-- Row 1: History Buttons -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="10">
-        <Button Content="{Binding TrackingButtonText}" 
-            Command="{Binding ToggleTrackingCommand}"
-            HorizontalAlignment="Stretch" 
-            Background="DarkGreen" Foreground="White"/>
-        <Button Content="Show History" 
-            Command="{Binding ShowHistoryCommand}"
-            HorizontalAlignment="Stretch" 
-            Background="DarkBlue" Foreground="White"/>
-        <Button Content="Clear History" 
-            Command="{Binding ClearHistoryCommand}"
-            HorizontalAlignment="Stretch" 
-            Background="DarkRed" Foreground="White"/>
-        </StackPanel>
+        <Style Selector="Button">
+            <Setter Property="CornerRadius" Value="2"/>
+            <Setter Property="Padding" Value="12,7"/>
+            <Setter Property="FontSize" Value="10"/>
+        </Style>
 
-    <!-- Row 2: History List -->
-    <ScrollViewer Grid.Row="2" Margin="10">
-        <ItemsControl ItemsSource="{Binding HistoryItems}">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="{x:Type models:HistoryDayGroup}">
-                    <Border Margin="0,0,0,12" Padding="12" CornerRadius="8" BorderBrush="#D0D0D0" BorderThickness="1">
-                        <StackPanel Spacing="8">
-                            <TextBlock Text="{Binding HeaderText}" FontSize="18" FontWeight="Bold"/>
-                            <TextBlock Text="{Binding Records.Count, StringFormat='{}{0} activities'}" Foreground="Gray"/>
-                            <ItemsControl ItemsSource="{Binding Records}">
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate DataType="{x:Type models:ActivityRecord}">
-                                        <Border BorderBrush="LightGray" BorderThickness="0,0,0,1" Padding="5" Margin="0,0,0,8">
-                                            <StackPanel Spacing="6">
-                                                <Grid ColumnDefinitions="*, Auto, Auto">
-                                                    <TextBlock Grid.Column="0" Text="{Binding AppNames}" FontWeight="Bold"/>
-                                                    <TextBlock Grid.Column="1" Text="{Binding StartTime, StringFormat='{}{0:HH:mm}'}" Margin="10,0"/>
-                                                    <TextBlock Grid.Column="2" Text="{Binding FormattedDuration}" Foreground="Green"/>
-                                                </Grid>
-                                                <Image Source="{Binding ScreenshotPath, Converter={StaticResource PathToBitmapConverter}}"
-                                                       IsVisible="{Binding HasScreenshot}"
-                                                       MaxWidth="640"
-                                                       MaxHeight="360"
-                                                       Stretch="UniformToFill"/>
-                                            </StackPanel>
-                                        </Border>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+        <Style Selector="TextBox">
+            <Setter Property="CornerRadius" Value="2"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="MinHeight" Value="31"/>
+            <Setter Property="Background" Value="#ECECEF"/>
+            <Setter Property="BorderBrush" Value="#E3E1EA"/>
+        </Style>
+
+        <Style Selector="NumericUpDown">
+            <Setter Property="CornerRadius" Value="2"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="MinHeight" Value="31"/>
+            <Setter Property="Background" Value="#ECECEF"/>
+            <Setter Property="BorderBrush" Value="#E3E1EA"/>
+        </Style>
+
+        <Style Selector="TabControl">
+            <Setter Property="Background" Value="#F2F2F4"/>
+        </Style>
+
+        <Style Selector="TabItem">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Foreground" Value="#555866"/>
+            <Setter Property="Padding" Value="18,9"/>
+        </Style>
+    </Window.Styles>
+
+    <Border BorderBrush="#202020" BorderThickness="4" Background="#F2F2F4">
+        <Grid RowDefinitions="31, *, 44">
+            <Border Grid.Row="0" Background="#F6F6F7" BorderBrush="#E3E3E6" BorderThickness="0,0,0,1">
+                <Grid ColumnDefinitions="58, *, 38" Margin="8,0">
+                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                        <Ellipse Width="9" Height="9" Fill="#EF6B5E"/>
+                        <Ellipse Width="9" Height="9" Fill="#EFC45A"/>
+                        <Ellipse Width="9" Height="9" Fill="#62C06F"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="4">
+                        <TextBlock Text="&lt;" Foreground="{StaticResource PurpleBrush}" FontWeight="Bold" FontSize="11"/>
+                        <TextBlock Text="Assign In" FontSize="10" FontWeight="SemiBold"/>
+                    </StackPanel>
+
+                    <TextBlock Grid.Column="2"
+                               Text="user"
+                               HorizontalAlignment="Right"
+                               VerticalAlignment="Center"
+                               Foreground="#777A82"
+                               FontSize="9"/>
+                </Grid>
+            </Border>
+
+            <TabControl Grid.Row="1" Padding="0" BorderThickness="0">
+                <TabItem Header="Attendance", >
+                    <Grid RowDefinitions="Auto, Auto, *">
+                        <StackPanel Grid.Row="0" Margin="18,12,18,10" Spacing="10">
+                            <Grid ColumnDefinitions="*, *">
+                                <TextBlock Text="{Binding TrackingButtonText}"
+                                           Foreground="{StaticResource MutedBrush}"
+                                           HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding TodayDateText}"
+                                           Foreground="{StaticResource MutedBrush}"
+                                           HorizontalAlignment="Center"/>
+                            </Grid>
+
+                            <TextBlock Text="{Binding AttendanceClockText}"
+                                       FontSize="31"
+                                       FontWeight="SemiBold"
+                                       Foreground="#173F55"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,3,0,0"/>
+
+                            <Grid ColumnDefinitions="*, *, Auto" ColumnSpacing="10">
+                                <Button Grid.Column="0"
+                                        Content="Clock In"
+                                        Command="{Binding ClockInCommand}"
+                                        Background="{StaticResource TealBrush}"
+                                        Foreground="White"/>
+                                <Button Grid.Column="1"
+                                        Content="Take a Break"
+                                        Command="{Binding TakeBreakCommand}"
+                                        Background="#D8D8DC"
+                                        Foreground="#8A8D96"/>
+                                <StackPanel Grid.Column="2" Width="74">
+                                    <TextBlock Text="Break time left" Foreground="{StaticResource MutedBrush}" FontSize="9"/>
+                                    <TextBlock Text="{Binding IdleTotalTime}" FontWeight="SemiBold" FontSize="10"/>
+                                </StackPanel>
+                            </Grid>
                         </StackPanel>
-                    </Border>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </ScrollViewer>
-    
-</Grid>
+
+                        <Border Grid.Row="1" Height="1" Background="#E2E2E5"/>
+
+                        <ScrollViewer Grid.Row="2" Margin="18,10,18,0">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Today" Foreground="{StaticResource MutedBrush}"/>
+                                <Border Background="#F1F1F3" BorderBrush="#D9D9DE" BorderThickness="1" CornerRadius="3" Padding="14,10">
+                                    <Grid ColumnDefinitions="*, *, Auto">
+                                        <StackPanel>
+                                            <TextBlock Text="Clock In" Foreground="{StaticResource MutedBrush}" FontSize="9"/>
+                                            <TextBlock Text="{Binding WorkdayStart}" FontSize="11"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="Clock Out" Foreground="{StaticResource MutedBrush}" FontSize="9"/>
+                                            <TextBlock Text="{Binding WorkdayEnd}" FontSize="11"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="2"
+                                                   Text="{Binding AttendanceClockText}"
+                                                   VerticalAlignment="Center"
+                                                   FontSize="10"/>
+                                    </Grid>
+                                </Border>
+
+                                <TextBlock Text="Recent activity" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0"/>
+                                <ItemsControl ItemsSource="{Binding HistoryItems}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="{x:Type models:HistoryDayGroup}">
+                                            <StackPanel Spacing="7">
+                                                <TextBlock Text="{Binding HeaderText}" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0"/>
+                                                <ItemsControl ItemsSource="{Binding Records}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate DataType="{x:Type models:ActivityRecord}">
+                                                            <Border Background="#F1F1F3" BorderBrush="#D9D9DE" BorderThickness="1" CornerRadius="3" Padding="12,9" Margin="0,0,0,7">
+                                                                <Grid ColumnDefinitions="*, Auto">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="{Binding AppNames}" FontWeight="SemiBold"/>
+                                                                        <TextBlock Text="{Binding StartTime, StringFormat='Clock in  {0:HH:mm}'}" Foreground="{StaticResource MutedBrush}" FontSize="9"/>
+                                                                    </StackPanel>
+                                                                    <TextBlock Grid.Column="1" Text="{Binding FormattedDuration}" VerticalAlignment="Center"/>
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Time Tracking">
+                    <Grid RowDefinitions="Auto, Auto, *">
+                        <StackPanel Grid.Row="0" Margin="18,12,18,8" Spacing="9">
+                            <TextBlock Text="&lt;  PROJECTS" Foreground="{StaticResource PurpleBrush}" FontWeight="SemiBold" FontSize="10"/>
+                            <Grid ColumnDefinitions="*, Auto">
+                                <TextBlock Text="SEO" FontSize="13" FontWeight="Bold"/>
+                                <TextBlock Grid.Column="1" Text="Recent Time" Foreground="{StaticResource MutedBrush}"/>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="83, *" ColumnSpacing="8">
+                                <Button Content="Add New Task"
+                                        Command="{Binding AddNewTaskCommand}"
+                                        Background="#F5F3FA"
+                                        BorderBrush="{StaticResource PurpleBrush}"
+                                        Foreground="{StaticResource PurpleBrush}"/>
+                                <TextBox Grid.Column="1" PlaceholderText="Search tasks"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <Border Grid.Row="1" Margin="18,0,18,8" Padding="10" Background="#F7F7F9" BorderBrush="#DDDDE2" BorderThickness="1" CornerRadius="3">
+                            <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto, Auto" ColumnSpacing="8" RowSpacing="7">
+                                <TextBox Grid.Row="0" Grid.Column="0" Text="{Binding OrganizationId}" PlaceholderText="Organization ID"/>
+                                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding EmployeeId}" PlaceholderText="Employee ID"/>
+                                <TextBox Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding ApiBaseUrl}" PlaceholderText="API Base URL"/>
+                                <CheckBox Grid.Row="2" Grid.Column="0" Content="Screenshots" IsChecked="{Binding ScreenshotsEnabled}" FontSize="10"/>
+                                <CheckBox Grid.Row="2" Grid.Column="1" Content="Auto start" IsChecked="{Binding AutoStartEnabled}" FontSize="10"/>
+                            </Grid>
+                        </Border>
+
+                        <ScrollViewer Grid.Row="2" Margin="18,0,18,0">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="Today" Foreground="{StaticResource MutedBrush}"/>
+                                <Border Background="#F7F7F9" BorderBrush="#E0E0E5" BorderThickness="1" CornerRadius="3" Padding="10">
+                                    <Grid ColumnDefinitions="*, Auto, 31" ColumnSpacing="8">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding CurrentWindowTitle}" FontWeight="SemiBold"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,6,0,0">
+                                                <Ellipse Width="8" Height="8" Fill="#EACB7A"/>
+                                                <TextBlock Text="Medium" Foreground="{StaticResource MutedBrush}" FontSize="9"/>
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding PendingSyncCount, StringFormat='Pending sync {0}'}" Foreground="{StaticResource PurpleBrush}" FontSize="9" Margin="0,7,0,0"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{Binding TodayTotalTime}" FontWeight="Bold" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="2"
+                                                Content="&gt;"
+                                                Command="{Binding ClockInCommand}"
+                                                Background="#DBD6F0"
+                                                BorderBrush="{StaticResource PurpleBrush}"
+                                                Foreground="{StaticResource PurpleBrush}"
+                                                Padding="0"
+                                                FontSize="18"/>
+                                    </Grid>
+                                </Border>
+
+                                <TextBlock Text="History" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0"/>
+                                <ItemsControl ItemsSource="{Binding HistoryItems}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate DataType="{x:Type models:HistoryDayGroup}">
+                                            <StackPanel Spacing="7">
+                                                <TextBlock Text="{Binding HeaderText}" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0"/>
+                                                <ItemsControl ItemsSource="{Binding Records}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate DataType="{x:Type models:ActivityRecord}">
+                                                            <Border Background="#F7F7F9" BorderBrush="#E0E0E5" BorderThickness="1" CornerRadius="3" Padding="10" Margin="0,0,0,7">
+                                                                <Grid ColumnDefinitions="*, Auto, 31" ColumnSpacing="8">
+                                                                    <StackPanel>
+                                                                        <TextBlock Text="{Binding AppNames}" FontWeight="SemiBold"/>
+                                                                        <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,6,0,0">
+                                                                            <Ellipse Width="8" Height="8" Fill="#EACB7A"/>
+                                                                            <TextBlock Text="Medium" Foreground="{StaticResource MutedBrush}" FontSize="9"/>
+                                                                        </StackPanel>
+                                                                        <Image Source="{Binding ScreenshotPath, Converter={StaticResource PathToBitmapConverter}}"
+                                                                               IsVisible="{Binding HasScreenshot}"
+                                                                               MaxHeight="72"
+                                                                               Stretch="UniformToFill"
+                                                                               Margin="0,7,0,0"/>
+                                                                    </StackPanel>
+                                                                    <TextBlock Grid.Column="1" Text="{Binding FormattedDuration}" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                                    <Button Grid.Column="2"
+                                                                            x:CompileBindings="False"
+                                                                            Content="&gt;"
+                                                                            Command="{Binding DataContext.ClockInCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                            Background="#DBD6F0"
+                                                                            BorderBrush="{StaticResource PurpleBrush}"
+                                                                            Foreground="{StaticResource PurpleBrush}"
+                                                                            Padding="0"
+                                                                            FontSize="18"/>
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+
+            <Border Grid.Row="2" Background="#F5F5F7" BorderBrush="#DDDEE4" BorderThickness="0,1,0,0">
+                <Grid ColumnDefinitions="40, *, 96" Margin="14,8">
+                    <Button Content="r"
+                            Command="{Binding ShowHistoryCommand}"
+                            Background="#F6F5FA"
+                            BorderBrush="#D7D1E9"
+                            Foreground="{StaticResource PurpleBrush}"
+                            Padding="0"/>
+                    <StackPanel Grid.Column="1" Spacing="1">
+                        <TextBlock Text="Last sync" Foreground="{StaticResource MutedBrush}" FontSize="9"/>
+                        <TextBlock Text="{Binding LastSyncText}" FontSize="9"/>
+                    </StackPanel>
+                    <Button Grid.Column="2"
+                            Content="Open Dashboard"
+                            Command="{Binding OpenDashboardCommand}"
+                            Background="#F7F5FC"
+                            BorderBrush="#D7D1E9"
+                            Foreground="{StaticResource PurpleBrush}"
+                            Padding="8,5"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
 </Window>

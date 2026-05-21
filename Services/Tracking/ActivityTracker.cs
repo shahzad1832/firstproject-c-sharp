@@ -141,19 +141,18 @@ public sealed class ActivityTracker : IDisposable
 
         CurrentWindowChanged?.Invoke(currentWindow);
 
-        if (DateTime.Now >= _nextScreenshotCapture)
+        if (_settings.ScreenshotsEnabled && DateTime.Now >= _nextScreenshotCapture)
         {
             string? screenshotPath = _platformActivityMonitor.CaptureScreenshot(_screenshotFolder);
             if (!string.IsNullOrWhiteSpace(screenshotPath))
             {
-                _repository.AddRecord(new ActivityRecord
-                {
-                    AppNames = $"Screenshot - {currentWindow}",
-                    StartTime = DateTime.Now,
-                    EndTime = DateTime.Now,
-                    DurationSeconds = 0,
-                    ScreenshotPath = screenshotPath
-                });
+                _repository.AddRecord(CreateRecord(
+                    $"Screenshot - {currentWindow}",
+                    DateTime.Now,
+                    DateTime.Now,
+                    0,
+                    "Screenshot",
+                    screenshotPath));
             }
 
             if (!string.IsNullOrWhiteSpace(_platformActivityMonitor.LastError))
@@ -163,6 +162,32 @@ public sealed class ActivityTracker : IDisposable
 
             _nextScreenshotCapture = CalculateNextScreenshotTime();
         }
+        else if (!_settings.ScreenshotsEnabled && DateTime.Now >= _nextScreenshotCapture)
+        {
+            _nextScreenshotCapture = CalculateNextScreenshotTime();
+        }
+    }
+
+    private ActivityRecord CreateRecord(
+        string appName,
+        DateTime startTime,
+        DateTime endTime,
+        double durationSeconds,
+        string recordType,
+        string? screenshotPath = null)
+    {
+        return new ActivityRecord
+                {
+            OrganizationId = _settings.OrganizationId,
+            EmployeeId = _settings.EmployeeId,
+            DeviceId = _settings.DeviceId,
+            RecordType = recordType,
+            AppNames = appName,
+            StartTime = startTime,
+            EndTime = endTime,
+            DurationSeconds = durationSeconds,
+            ScreenshotPath = screenshotPath
+        };
     }
 
     private void SavePendingRecord()
@@ -173,13 +198,16 @@ public sealed class ActivityTracker : IDisposable
         }
 
         DateTime endTime = DateTime.Now;
-        _repository.AddRecord(new ActivityRecord
-        {
-            AppNames = _lastWindowTitle,
-            StartTime = _startTime,
-            EndTime = endTime,
-            DurationSeconds = (endTime - _startTime).TotalSeconds
-        });
+        string recordType = string.Equals(_lastWindowTitle, "Idle", StringComparison.Ordinal)
+            ? "Idle"
+            : "Activity";
+
+        _repository.AddRecord(CreateRecord(
+            _lastWindowTitle,
+            _startTime,
+            endTime,
+            (endTime - _startTime).TotalSeconds,
+            recordType));
     }
 
     private DateTime CalculateNextScreenshotTime()

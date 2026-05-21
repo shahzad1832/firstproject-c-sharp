@@ -54,7 +54,7 @@ public partial class App : Application
         _trayIcon = new TrayIcon
         {
             Icon = icon,
-            ToolTipText = "firstProject"
+            ToolTipText = "Assing In"
         };
 
         var menu = new NativeMenu();
