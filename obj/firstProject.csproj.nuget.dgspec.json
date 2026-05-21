@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "d:\\firstProject\\firstProject.csproj": {}
+    "/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/firstProject.csproj": {}
   },
   "projects": {
-    "d:\\firstProject\\firstProject.csproj": {
+    "/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/firstProject.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "d:\\firstProject\\firstProject.csproj",
+        "projectUniqueName": "/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/firstProject.csproj",
         "projectName": "firstProject",
-        "projectPath": "d:\\firstProject\\firstProject.csproj",
-        "packagesPath": "C:\\Users\\hp\\.nuget\\packages\\",
-        "outputPath": "d:\\firstProject\\obj\\",
+        "projectPath": "/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/firstProject.csproj",
+        "packagesPath": "/Users/leads-lp-02/.nuget/packages/",
+        "outputPath": "/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\hp\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "/Users/leads-lp-02/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -24,6 +24,7 @@
         },
         "frameworks": {
           "net10.0": {
+            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {}
           }
@@ -38,10 +39,11 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "10.0.300"
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "Avalonia": {
@@ -93,7 +95,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.203/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/10.0.300/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",

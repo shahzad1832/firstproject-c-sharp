@@ -5,38 +5,20 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
-using System.Text;
 using firstProject.Data;
 using firstProject.Models;
+using firstProject.Services.Platform;
 using firstProject.ViewModels;
 
 namespace firstProject.Views;
 
 public partial class MainWindow : Window
 {
-    // Windows API Functions (Importing user32.dll)
-     [DllImport("user32.dll")]
-private static extern IntPtr GetForegroundWindow();
-
-[DllImport("user32.dll")]
-    private static extern int GetWindowText(IntPtr hWnd, StringBuilder text, int count);
-
-    [DllImport("user32.dll")]
-    private static extern int GetSystemMetrics(int nIndex);
-
-    private const int SM_XVIRTUALSCREEN = 76;
-    private const int SM_YVIRTUALSCREEN = 77;
-    private const int SM_CXVIRTUALSCREEN = 78;
-    private const int SM_CYVIRTUALSCREEN = 79;
-
     private DispatcherTimer _timer;
-  private string _lastWindowTitle = "";
+    private readonly IPlatformActivityMonitor _platformActivityMonitor;
+    private string _lastWindowTitle = "";
     private DateTime _startTime;
     private DateTime _nextScreenshotCapture;
     private readonly string _screenshotFolder;
@@ -44,6 +26,7 @@ private static extern IntPtr GetForegroundWindow();
     public MainWindow()
     {
         InitializeComponent();
+        _platformActivityMonitor = PlatformActivityMonitorFactory.Create();
 
         // Timer setup: Har 1 second baad check karega
 
@@ -64,7 +47,7 @@ private static extern IntPtr GetForegroundWindow();
 
     private void Timer_Tick(object? sender, EventArgs e)
     {
-        string currentWindow = GetActiveWindowTitle();
+        string currentWindow = _platformActivityMonitor.GetActiveWindowTitle();
         ResultTextBlock.Text = currentWindow;
         if (currentWindow != _lastWindowTitle)
         {
@@ -81,9 +64,10 @@ private static extern IntPtr GetForegroundWindow();
 
         if (DateTime.Now >= _nextScreenshotCapture)
         {
-            if (OperatingSystem.IsWindows())
+            string? screenshotPath = _platformActivityMonitor.CaptureScreenshot(_screenshotFolder);
+            if (!string.IsNullOrWhiteSpace(screenshotPath))
             {
-                CaptureAndStoreScreenshot();
+                SaveToDatabase($"Screenshot - {currentWindow}", DateTime.Now, DateTime.Now, screenshotPath);
             }
             _nextScreenshotCapture = CalculateNextScreenshotTime();
         }
@@ -96,18 +80,6 @@ private static extern IntPtr GetForegroundWindow();
         return DateTime.Now.AddMinutes(randomMinutes);
     }
 
-    private string GetActiveWindowTitle()
-    {
-        const int nChars = 256;
-        StringBuilder buff = new StringBuilder(nChars);
-        IntPtr handle = GetForegroundWindow();
-
-        if (GetWindowText(handle, buff, nChars) > 0)
-        {
-            return buff.ToString();
-        }
-        return "Desktop / Unknown";
-    }
     private void SaveToDatabase(string name, DateTime start, DateTime end, string? screenshotPath = null)
 {
     using (var db = new AppDbContext())
@@ -120,43 +92,10 @@ private static extern IntPtr GetForegroundWindow();
             DurationSeconds = (end - start).TotalSeconds,
             ScreenshotPath = screenshotPath
         };
-        db.Activities.Add(record); // Table mein add karo
-        db.SaveChanges();          // Database file mein save kar do
+        db.Activities.Add(record);
+        db.SaveChanges();
     }
 }
-
-    [SupportedOSPlatform("windows")]
-    private void CaptureAndStoreScreenshot()
-    {
-        try
-        {
-            int x = GetSystemMetrics(SM_XVIRTUALSCREEN);
-            int y = GetSystemMetrics(SM_YVIRTUALSCREEN);
-            int width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
-            int height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
-
-            if (width <= 0 || height <= 0)
-            {
-                return;
-            }
-
-            string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
-            string filePath = Path.Combine(_screenshotFolder, $"screenshot_{timestamp}.png");
-
-            using (var bitmap = new Bitmap(width, height))
-            using (var graphics = Graphics.FromImage(bitmap))
-            {
-                graphics.CopyFromScreen(x, y, 0, 0, new Size(width, height), CopyPixelOperation.SourceCopy);
-                bitmap.Save(filePath, ImageFormat.Png);
-            }
-
-            SaveToDatabase($"Screenshot - {GetActiveWindowTitle()}", DateTime.Now, DateTime.Now, filePath);
-        }
-        catch
-        {
-            // Screenshot capture fail ho jaye to tracking ko stop nahi karna.
-        }
-    }
 
     private void EnsureActivitySchema()
     {
