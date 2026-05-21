@@ -19,10 +19,36 @@ public static class PlatformActivityMonitorFactory
         return new NoopPlatformActivityMonitor();
     }
 
+    public static IIdleTimeProvider CreateIdleTimeProvider()
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            return new WindowsIdleTimeProvider();
+        }
+
+        if (OperatingSystem.IsMacOS())
+        {
+            return new MacIdleTimeProvider();
+        }
+
+        return new NoopIdleTimeProvider();
+    }
+
     private sealed class NoopPlatformActivityMonitor : IPlatformActivityMonitor
     {
+        public bool HasRequiredPermissions() => true;
+
+        public bool RequestPermissions() => true;
+
         public string GetActiveWindowTitle() => "Desktop / Unknown";
 
         public string? CaptureScreenshot(string screenshotFolder) => null;
+
+        public string? LastError => null;
+    }
+
+    private sealed class NoopIdleTimeProvider : IIdleTimeProvider
+    {
+        public TimeSpan GetIdleTime() => TimeSpan.Zero;
     }
 }

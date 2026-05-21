@@ -2,7 +2,7 @@
 
 This app now supports both Windows and macOS.
 
-## macOS permissions checklist
+## macOS permissions checklist (required)
 
 Before you run the app on Mac, grant these permissions:
 
@@ -20,6 +20,10 @@ Before you run the app on Mac, grant these permissions:
    - If macOS asks for permission when reading the frontmost application through `System Events`, allow it.
    - This can appear the first time the app queries the active app title.
 
+4. **Files and Folders (Application Support)**
+   - The app writes `tracking.db` and screenshots into **Application Support**.
+   - If macOS prompts for file access, allow it so the app can save data.
+
 ## Expected behavior on Mac
 
 - The app reads the active application name using `osascript`.
@@ -35,7 +39,24 @@ Before you run the app on Mac, grant these permissions:
 ## Run commands
 
 ```bash
+dotnet clean
 dotnet restore
 dotnet build
 dotnet run
 ```
+
+## Rebuild macOS .app bundle
+
+```bash
+dotnet clean
+dotnet publish -c Release -r osx-arm64 --self-contained true
+./scripts/create-macos-app.sh Release osx-arm64
+```
+
+The app bundle will be under:
+
+```text
+bin/Release/net10.0/osx-arm64/publish/firstProject.app
+```
+
+Copy it to Desktop (or Applications) and run from there.

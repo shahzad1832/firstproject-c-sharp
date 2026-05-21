@@ -25,8 +25,21 @@ public sealed class WindowsPlatformActivityMonitor : IPlatformActivityMonitor
     private const int SM_CXVIRTUALSCREEN = 78;
     private const int SM_CYVIRTUALSCREEN = 79;
 
+    public bool HasRequiredPermissions()
+    {
+        LastError = null;
+        return true;
+    }
+
+    public bool RequestPermissions()
+    {
+        LastError = null;
+        return true;
+    }
+
     public string GetActiveWindowTitle()
     {
+        LastError = null;
         const int nChars = 256;
         StringBuilder buffer = new(nChars);
         IntPtr handle = GetForegroundWindow();
@@ -43,6 +56,7 @@ public sealed class WindowsPlatformActivityMonitor : IPlatformActivityMonitor
     {
         try
         {
+            LastError = null;
             int x = GetSystemMetrics(SM_XVIRTUALSCREEN);
             int y = GetSystemMetrics(SM_YVIRTUALSCREEN);
             int width = GetSystemMetrics(SM_CXVIRTUALSCREEN);
@@ -69,7 +83,10 @@ public sealed class WindowsPlatformActivityMonitor : IPlatformActivityMonitor
         }
         catch
         {
+            LastError = "Failed to capture screenshot.";
             return null;
         }
     }
+
+    public string? LastError { get; private set; }
 }

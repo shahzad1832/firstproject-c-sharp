@@ -23,14 +23,27 @@
     <!-- Row 0: Current Tracking -->
     <StackPanel Grid.Row="0" Margin="10">
         <TextBlock Text="Current Window:" Foreground="Gray"/>
-        <TextBlock x:Name="ResultTextBlock" FontSize="20" FontWeight="Bold"/>
+        <TextBlock Text="{Binding CurrentWindowTitle}" FontSize="20" FontWeight="Bold"/>
+        <TextBlock Text="{Binding StatusMessage}" Foreground="DarkRed" Margin="0,6,0,0"/>
+        <TextBlock Text="{Binding TodayTotalTime, StringFormat='Today: {0}'}" Foreground="DarkGreen" Margin="0,6,0,0"/>
+        <TextBlock Text="{Binding IdleTotalTime, StringFormat='Idle: {0}'}" Foreground="DarkOrange" Margin="0,4,0,0"/>
     </StackPanel>
 
-    <!-- Row 1: History Button -->
-    <Button Grid.Row="1" Content="Show History" 
-            Click="ShowHistory_Click" 
+        <!-- Row 1: History Buttons -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="10">
+        <Button Content="{Binding TrackingButtonText}" 
+            Command="{Binding ToggleTrackingCommand}"
             HorizontalAlignment="Stretch" 
-            Margin="10" Background="DarkBlue" Foreground="White"/>
+            Background="DarkGreen" Foreground="White"/>
+        <Button Content="Show History" 
+            Command="{Binding ShowHistoryCommand}"
+            HorizontalAlignment="Stretch" 
+            Background="DarkBlue" Foreground="White"/>
+        <Button Content="Clear History" 
+            Command="{Binding ClearHistoryCommand}"
+            HorizontalAlignment="Stretch" 
+            Background="DarkRed" Foreground="White"/>
+        </StackPanel>
 
     <!-- Row 2: History List -->
     <ScrollViewer Grid.Row="2" Margin="10">
