@@ -60,12 +60,35 @@
             <Setter Property="Foreground" Value="#555866"/>
             <Setter Property="Padding" Value="18,9"/>
         </Style>
+
+        <Style Selector="TabItem:selected">
+            <Setter Property="Foreground" Value="{StaticResource PurpleBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style Selector="TabItem:selected /template/ Border#PART_SelectedPipe">
+            <Setter Property="Background" Value="{StaticResource PurpleBrush}"/>
+        </Style>
+
+        <Style Selector="Button.HeaderButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="{StaticResource PurpleBrush}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Button.HeaderButton:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#E2DFEE"/>
+            <Setter Property="Foreground" Value="{StaticResource PurpleBrush}"/>
+        </Style>
     </Window.Styles>
 
     <Border BorderBrush="#202020" BorderThickness="4" Background="#F2F2F4">
         <Grid RowDefinitions="31, *, 44">
             <Border Grid.Row="0" Background="#F6F6F7" BorderBrush="#E3E3E6" BorderThickness="0,0,0,1">
-                <Grid ColumnDefinitions="58, *, 38" Margin="8,0">
+                <Grid ColumnDefinitions="58, *, Auto" Margin="8,0">
                     <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                         <Ellipse Width="9" Height="9" Fill="#EF6B5E"/>
                         <Ellipse Width="9" Height="9" Fill="#EFC45A"/>
@@ -77,17 +100,21 @@
                         <TextBlock Text="Assign In" FontSize="10" FontWeight="SemiBold"/>
                     </StackPanel>
 
-                    <TextBlock Grid.Column="2"
-                               Text="user"
-                               HorizontalAlignment="Right"
-                               VerticalAlignment="Center"
-                               Foreground="#777A82"
-                               FontSize="9"/>
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                        <Button Classes="HeaderButton"
+                                Content="↻"
+                                Command="{Binding ShowHistoryCommand}"
+                                ToolTip.Tip="Refresh Data"/>
+                        <TextBlock Text="user"
+                                   VerticalAlignment="Center"
+                                   Foreground="#777A82"
+                                   FontSize="9"/>
+                    </StackPanel>
                 </Grid>
             </Border>
 
             <TabControl Grid.Row="1" Padding="0" BorderThickness="0">
-                <TabItem Header="Attendance", >
+                <TabItem Header="Attendance">
                     <Grid RowDefinitions="Auto, Auto, *">
                         <StackPanel Grid.Row="0" Margin="18,12,18,10" Spacing="10">
                             <Grid ColumnDefinitions="*, *">
@@ -279,27 +306,7 @@
                 </TabItem>
             </TabControl>
 
-            <Border Grid.Row="2" Background="#F5F5F7" BorderBrush="#DDDEE4" BorderThickness="0,1,0,0">
-                <Grid ColumnDefinitions="40, *, 96" Margin="14,8">
-                    <Button Content="r"
-                            Command="{Binding ShowHistoryCommand}"
-                            Background="#F6F5FA"
-                            BorderBrush="#D7D1E9"
-                            Foreground="{StaticResource PurpleBrush}"
-                            Padding="0"/>
-                    <StackPanel Grid.Column="1" Spacing="1">
-                        <TextBlock Text="Last sync" Foreground="{StaticResource MutedBrush}" FontSize="9"/>
-                        <TextBlock Text="{Binding LastSyncText}" FontSize="9"/>
-                    </StackPanel>
-                    <Button Grid.Column="2"
-                            Content="Open Dashboard"
-                            Command="{Binding OpenDashboardCommand}"
-                            Background="#F7F5FC"
-                            BorderBrush="#D7D1E9"
-                            Foreground="{StaticResource PurpleBrush}"
-                            Padding="8,5"/>
-                </Grid>
-            </Border>
+           
         </Grid>
     </Border>
 </Window>

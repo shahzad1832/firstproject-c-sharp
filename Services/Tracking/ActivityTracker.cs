@@ -22,6 +22,7 @@ public sealed class ActivityTracker : IDisposable
     private DateTime _nextScreenshotCapture;
     private bool _isTracking;
     private bool _isIdle;
+    private DateTime? _breakStartTime;
 
     public ActivityTracker(
         IPlatformActivityMonitor platformActivityMonitor,
@@ -61,6 +62,22 @@ public sealed class ActivityTracker : IDisposable
             return;
         }
 
+        if (_breakStartTime.HasValue)
+        {
+            DateTime breakEndTime = DateTime.Now;
+            double breakDuration = (breakEndTime - _breakStartTime.Value).TotalSeconds;
+            if (breakDuration > 0)
+            {
+                _repository.AddRecord(CreateRecord(
+                    "Idle",
+                    _breakStartTime.Value,
+                    breakEndTime,
+                    breakDuration,
+                    "Idle"));
+            }
+            _breakStartTime = null;
+        }
+
         _isTracking = true;
         _lastWindowTitle = string.Empty;
         _startTime = DateTime.Now;
@@ -81,6 +98,7 @@ public sealed class ActivityTracker : IDisposable
         _lastWindowTitle = string.Empty;
         _isIdle = false;
         _isTracking = false;
+        _breakStartTime = DateTime.Now;
         TrackingStateChanged?.Invoke(false);
     }
 

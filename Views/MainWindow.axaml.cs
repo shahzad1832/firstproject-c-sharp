@@ -10,7 +10,7 @@ public partial class MainWindow : Window
         Closing += OnClosing;
     }
 
-    private void OnClosing(object? sender, WindowClosingEventArgs e)
+    private void OnClosing(object sender, WindowClosingEventArgs e)
     {
         if (App.IsExitRequested)
         {

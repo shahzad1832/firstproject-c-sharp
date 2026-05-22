@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -240,7 +240,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         {
             Interval = TimeSpan.FromSeconds(30)
         };
-        _summaryTimer.Tick += async (_, _) => await UpdateTodayTotalTimeAsync();
+        _summaryTimer.Tick += async (_, _) => await RefreshHistoryAsync();
         _summaryTimer.Start();
 
         _tracker.Start();
@@ -262,11 +262,13 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private void StartTracking()
     {
         _tracker.Start();
+        _ = RefreshHistoryAsync();
     }
 
     private void StopTracking()
     {
         _tracker.Stop();
+        _ = RefreshHistoryAsync();
     }
 
     private void AddNewTask()

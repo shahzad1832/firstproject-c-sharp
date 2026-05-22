@@ -135,13 +135,6 @@ d:/firstProject/bin/Debug/net10.0/System.Private.Windows.Core.dll
 d:/firstProject/bin/Debug/net10.0/System.Private.Windows.GdiPlus.dll
 d:/firstProject/bin/Debug/net10.0/runtimes/win/lib/net10.0/Microsoft.Win32.SystemEvents.dll
 d:/firstProject/obj/Debug/net10.0/firstProject.sourcelink.json
-/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/obj/Debug/net10.0/firstProject.csproj.AssemblyReference.cache
-/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/obj/Debug/net10.0/Avalonia/Resources.Inputs.cache
-/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/obj/Debug/net10.0/Avalonia/resources
-/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/obj/Debug/net10.0/firstProject.GeneratedMSBuildEditorConfig.editorconfig
-/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/obj/Debug/net10.0/firstProject.AssemblyInfoInputs.cache
-/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/obj/Debug/net10.0/firstProject.AssemblyInfo.cs
-/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/obj/Debug/net10.0/firstProject.csproj.CoreCompileInputs.cache
 /Users/leads-lp-02/DotNetProject/firstproject-c-sharp/bin/Debug/net10.0/firstProject
 /Users/leads-lp-02/DotNetProject/firstproject-c-sharp/bin/Debug/net10.0/firstProject.deps.json
 /Users/leads-lp-02/DotNetProject/firstproject-c-sharp/bin/Debug/net10.0/firstProject.runtimeconfig.json
@@ -265,6 +258,13 @@ d:/firstProject/obj/Debug/net10.0/firstProject.sourcelink.json
 /Users/leads-lp-02/DotNetProject/firstproject-c-sharp/bin/Debug/net10.0/runtimes/win-arm64/native/e_sqlite3.dll
 /Users/leads-lp-02/DotNetProject/firstproject-c-sharp/bin/Debug/net10.0/runtimes/win-x64/native/e_sqlite3.dll
 /Users/leads-lp-02/DotNetProject/firstproject-c-sharp/bin/Debug/net10.0/runtimes/win-x86/native/e_sqlite3.dll
+/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/obj/Debug/net10.0/firstProject.csproj.AssemblyReference.cache
+/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/obj/Debug/net10.0/Avalonia/Resources.Inputs.cache
+/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/obj/Debug/net10.0/Avalonia/resources
+/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/obj/Debug/net10.0/firstProject.GeneratedMSBuildEditorConfig.editorconfig
+/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/obj/Debug/net10.0/firstProject.AssemblyInfoInputs.cache
+/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/obj/Debug/net10.0/firstProject.AssemblyInfo.cs
+/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/obj/Debug/net10.0/firstProject.csproj.CoreCompileInputs.cache
 /Users/leads-lp-02/DotNetProject/firstproject-c-sharp/obj/Debug/net10.0/firstProject.sourcelink.json
 /Users/leads-lp-02/DotNetProject/firstproject-c-sharp/obj/Debug/net10.0/firstPro.4E4E8AFB.Up2Date
 /Users/leads-lp-02/DotNetProject/firstproject-c-sharp/obj/Debug/net10.0/firstProject.dll
