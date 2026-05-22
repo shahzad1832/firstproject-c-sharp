@@ -8,7 +8,7 @@ namespace firstProject.Converters;
 
 public class PathToBitmapConverter : IValueConverter
 {
-    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value is string path && File.Exists(path))
         {
@@ -18,7 +18,7 @@ public class PathToBitmapConverter : IValueConverter
         return null;
     }
 
-    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
         throw new NotSupportedException();
     }

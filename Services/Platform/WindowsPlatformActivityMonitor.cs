@@ -88,5 +88,5 @@ public sealed class WindowsPlatformActivityMonitor : IPlatformActivityMonitor
         }
     }
 
-    public string? LastError { get; private set; }
+    public string LastError { get; private set; }
 }

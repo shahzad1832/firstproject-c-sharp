@@ -12,7 +12,7 @@ public class ActivityRecord
     public string? EmployeeId { get; set; }
     public string? DeviceId { get; set; }
     public string RecordType { get; set; } = "Activity";
-    public  string? AppNames { get; set; }   // App ka naam (e.g. Chrome)
+    public string? AppNames { get; set; }   // App ka naam (e.g. Chrome)
     public DateTime StartTime { get; set; } 
     public DateTime EndTime { get; set; }
     public double DurationSeconds { get; set; }

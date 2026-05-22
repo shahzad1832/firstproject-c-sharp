@@ -89,11 +89,7 @@
         <Grid RowDefinitions="31, *, 44">
             <Border Grid.Row="0" Background="#F6F6F7" BorderBrush="#E3E3E6" BorderThickness="0,0,0,1">
                 <Grid ColumnDefinitions="58, *, Auto" Margin="8,0">
-                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                        <Ellipse Width="9" Height="9" Fill="#EF6B5E"/>
-                        <Ellipse Width="9" Height="9" Fill="#EFC45A"/>
-                        <Ellipse Width="9" Height="9" Fill="#62C06F"/>
-                    </StackPanel>
+                    
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="4">
                         <TextBlock Text="&lt;" Foreground="{StaticResource PurpleBrush}" FontWeight="Bold" FontSize="11"/>
@@ -114,7 +110,7 @@
             </Border>
 
             <TabControl Grid.Row="1" Padding="0" BorderThickness="0">
-                <TabItem Header="Attendance">
+                <TabItem Header="Time Tracking">
                     <Grid RowDefinitions="Auto, Auto, *">
                         <StackPanel Grid.Row="0" Margin="18,12,18,10" Spacing="10">
                             <Grid ColumnDefinitions="*, *">
@@ -204,106 +200,100 @@
                     </Grid>
                 </TabItem>
 
-                <TabItem Header="Time Tracking">
-                    <Grid RowDefinitions="Auto, Auto, *">
-                        <StackPanel Grid.Row="0" Margin="18,12,18,8" Spacing="9">
-                            <TextBlock Text="&lt;  PROJECTS" Foreground="{StaticResource PurpleBrush}" FontWeight="SemiBold" FontSize="10"/>
-                            <Grid ColumnDefinitions="*, Auto">
-                                <TextBlock Text="SEO" FontSize="13" FontWeight="Bold"/>
-                                <TextBlock Grid.Column="1" Text="Recent Time" Foreground="{StaticResource MutedBrush}"/>
-                            </Grid>
 
-                            <Grid ColumnDefinitions="83, *" ColumnSpacing="8">
-                                <Button Content="Add New Task"
-                                        Command="{Binding AddNewTaskCommand}"
-                                        Background="#F5F3FA"
-                                        BorderBrush="{StaticResource PurpleBrush}"
-                                        Foreground="{StaticResource PurpleBrush}"/>
-                                <TextBox Grid.Column="1" PlaceholderText="Search tasks"/>
-                            </Grid>
+                <TabItem Header="Screenshots">
+                    <Grid RowDefinitions="Auto, Auto, *">
+
+                        <!-- Header row: count + refresh -->
+                        <Grid Grid.Row="0" ColumnDefinitions="*, Auto" Margin="18,12,18,8">
+                            <StackPanel>
+                                <TextBlock Text="Today's Screenshots"
+                                           FontSize="12"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextBrush}"/>
+                                <TextBlock Text="{Binding ScreenshotCountText}"
+                                           Foreground="{StaticResource MutedBrush}"
+                                           FontSize="9"
+                                           Margin="0,2,0,0"/>
+                            </StackPanel>
+                            <Button Grid.Column="1"
+                                    Classes="HeaderButton"
+                                    Content="↻"
+                                    Command="{Binding RefreshScreenshotsCommand}"
+                                    ToolTip.Tip="Refresh Screenshots"
+                                    FontSize="16"
+                                    VerticalAlignment="Top"/>
+                        </Grid>
+
+                        <Border Grid.Row="1" Height="1" Background="#E2E2E5"/>
+
+                        <!-- Empty state -->
+                        <StackPanel Grid.Row="2"
+                                    IsVisible="{Binding !TodayScreenshots.Count}"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center"
+                                    Spacing="8"
+                                    Margin="18">
+                            <TextBlock Text="📷"
+                                       FontSize="32"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="No screenshots yet"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource MutedBrush}"
+                                       HorizontalAlignment="Center"/>
+                            <TextBlock Text="Screenshots are captured automatically during tracking"
+                                       Foreground="{StaticResource MutedBrush}"
+                                       FontSize="9"
+                                       TextWrapping="Wrap"
+                                       HorizontalAlignment="Center"
+                                       TextAlignment="Center"/>
                         </StackPanel>
 
-                        <Border Grid.Row="1" Margin="18,0,18,8" Padding="10" Background="#F7F7F9" BorderBrush="#DDDDE2" BorderThickness="1" CornerRadius="3">
-                            <Grid ColumnDefinitions="*, *" RowDefinitions="Auto, Auto, Auto" ColumnSpacing="8" RowSpacing="7">
-                                <TextBox Grid.Row="0" Grid.Column="0" Text="{Binding OrganizationId}" PlaceholderText="Organization ID"/>
-                                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding EmployeeId}" PlaceholderText="Employee ID"/>
-                                <TextBox Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding ApiBaseUrl}" PlaceholderText="API Base URL"/>
-                                <CheckBox Grid.Row="2" Grid.Column="0" Content="Screenshots" IsChecked="{Binding ScreenshotsEnabled}" FontSize="10"/>
-                                <CheckBox Grid.Row="2" Grid.Column="1" Content="Auto start" IsChecked="{Binding AutoStartEnabled}" FontSize="10"/>
-                            </Grid>
-                        </Border>
-
-                        <ScrollViewer Grid.Row="2" Margin="18,0,18,0">
-                            <StackPanel Spacing="10">
-                                <TextBlock Text="Today" Foreground="{StaticResource MutedBrush}"/>
-                                <Border Background="#F7F7F9" BorderBrush="#E0E0E5" BorderThickness="1" CornerRadius="3" Padding="10">
-                                    <Grid ColumnDefinitions="*, Auto, 31" ColumnSpacing="8">
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding CurrentWindowTitle}" FontWeight="SemiBold"/>
-                                            <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,6,0,0">
-                                                <Ellipse Width="8" Height="8" Fill="#EACB7A"/>
-                                                <TextBlock Text="Medium" Foreground="{StaticResource MutedBrush}" FontSize="9"/>
+                        <!-- Screenshot grid -->
+                        <ScrollViewer Grid.Row="2"
+                                      IsVisible="{Binding TodayScreenshots.Count}"
+                                      Margin="14,10,14,10">
+                            <ItemsControl ItemsSource="{Binding TodayScreenshots}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate DataType="{x:Type models:ActivityRecord}">
+                                        <Border Background="#F1F1F3"
+                                                BorderBrush="#D9D9DE"
+                                                BorderThickness="1"
+                                                CornerRadius="4"
+                                                Margin="3"
+                                                Width="121"
+                                                Padding="0,0,0,6"
+                                                ClipToBounds="True">
+                                            <StackPanel Spacing="4">
+                                                <Image Source="{Binding ScreenshotPath, Converter={StaticResource PathToBitmapConverter}}"
+                                                       Height="72"
+                                                       Stretch="UniformToFill"/>
+                                                <StackPanel Margin="6,0">
+                                                    <TextBlock Text="{Binding StartTime, StringFormat='{}{0:HH:mm:ss}'}"
+                                                               FontSize="9"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{StaticResource TextBrush}"/>
+                                                    <TextBlock Text="{Binding AppNames}"
+                                                               FontSize="8"
+                                                               Foreground="{StaticResource MutedBrush}"
+                                                               TextTrimming="CharacterEllipsis"/>
+                                                </StackPanel>
                                             </StackPanel>
-                                            <TextBlock Text="{Binding PendingSyncCount, StringFormat='Pending sync {0}'}" Foreground="{StaticResource PurpleBrush}" FontSize="9" Margin="0,7,0,0"/>
-                                        </StackPanel>
-                                        <TextBlock Grid.Column="1" Text="{Binding TodayTotalTime}" FontWeight="Bold" VerticalAlignment="Center"/>
-                                        <Button Grid.Column="2"
-                                                Content="&gt;"
-                                                Command="{Binding ClockInCommand}"
-                                                Background="#DBD6F0"
-                                                BorderBrush="{StaticResource PurpleBrush}"
-                                                Foreground="{StaticResource PurpleBrush}"
-                                                Padding="0"
-                                                FontSize="18"/>
-                                    </Grid>
-                                </Border>
-
-                                <TextBlock Text="History" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0"/>
-                                <ItemsControl ItemsSource="{Binding HistoryItems}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate DataType="{x:Type models:HistoryDayGroup}">
-                                            <StackPanel Spacing="7">
-                                                <TextBlock Text="{Binding HeaderText}" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0"/>
-                                                <ItemsControl ItemsSource="{Binding Records}">
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate DataType="{x:Type models:ActivityRecord}">
-                                                            <Border Background="#F7F7F9" BorderBrush="#E0E0E5" BorderThickness="1" CornerRadius="3" Padding="10" Margin="0,0,0,7">
-                                                                <Grid ColumnDefinitions="*, Auto, 31" ColumnSpacing="8">
-                                                                    <StackPanel>
-                                                                        <TextBlock Text="{Binding AppNames}" FontWeight="SemiBold"/>
-                                                                        <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,6,0,0">
-                                                                            <Ellipse Width="8" Height="8" Fill="#EACB7A"/>
-                                                                            <TextBlock Text="Medium" Foreground="{StaticResource MutedBrush}" FontSize="9"/>
-                                                                        </StackPanel>
-                                                                        <Image Source="{Binding ScreenshotPath, Converter={StaticResource PathToBitmapConverter}}"
-                                                                               IsVisible="{Binding HasScreenshot}"
-                                                                               MaxHeight="72"
-                                                                               Stretch="UniformToFill"
-                                                                               Margin="0,7,0,0"/>
-                                                                    </StackPanel>
-                                                                    <TextBlock Grid.Column="1" Text="{Binding FormattedDuration}" FontWeight="Bold" VerticalAlignment="Center"/>
-                                                                    <Button Grid.Column="2"
-                                                                            x:CompileBindings="False"
-                                                                            Content="&gt;"
-                                                                            Command="{Binding DataContext.ClockInCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                                            Background="#DBD6F0"
-                                                                            BorderBrush="{StaticResource PurpleBrush}"
-                                                                            Foreground="{StaticResource PurpleBrush}"
-                                                                            Padding="0"
-                                                                            FontSize="18"/>
-                                                                </Grid>
-                                                            </Border>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </ScrollViewer>
+
                     </Grid>
                 </TabItem>
+
             </TabControl>
 
            

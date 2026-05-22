@@ -87,7 +87,7 @@ public partial class App : Application
         return null;
     }
 
-    public void TrayShow_Click(object? sender, EventArgs e)
+    public void TrayShow_Click(object sender, EventArgs e)
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {

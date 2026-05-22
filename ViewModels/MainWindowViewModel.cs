@@ -24,6 +24,14 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private readonly DispatcherTimer _summaryTimer;
 
     public ObservableCollection<HistoryDayGroup> HistoryItems { get; } = new();
+    public ObservableCollection<ActivityRecord> TodayScreenshots { get; } = new();
+
+    private string _screenshotCountText = "No screenshots today";
+    public string ScreenshotCountText
+    {
+        get => _screenshotCountText;
+        private set => SetProperty(ref _screenshotCountText, value);
+    }
 
     private string _currentWindowTitle = "Not tracking";
     private string _statusMessage = string.Empty;
@@ -194,6 +202,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     public IRelayCommand OpenDashboardCommand { get; }
     public IAsyncRelayCommand ShowHistoryCommand { get; }
     public IAsyncRelayCommand ClearHistoryCommand { get; }
+    public IAsyncRelayCommand RefreshScreenshotsCommand { get; }
 
     public MainWindowViewModel()
     {
@@ -235,6 +244,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         OpenDashboardCommand = new RelayCommand(OpenDashboard);
         ShowHistoryCommand = new AsyncRelayCommand(RefreshHistoryAsync);
         ClearHistoryCommand = new AsyncRelayCommand(ClearHistoryAsync);
+        RefreshScreenshotsCommand = new AsyncRelayCommand(RefreshScreenshotsAsync);
 
         _summaryTimer = new DispatcherTimer
         {
@@ -338,6 +348,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         }
 
         await UpdateTodayTotalTimeAsync();
+        await RefreshScreenshotsAsync();
     }
 
     private async Task ClearHistoryAsync()
@@ -388,6 +399,21 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         int minutes = (totalSeconds % 3600) / 60;
         int remainingSeconds = totalSeconds % 60;
         return $"{hours:00}:{minutes:00}:{remainingSeconds:00} h";
+    }
+
+    private async Task RefreshScreenshotsAsync()
+    {
+        var screenshots = await _repository.GetTodayScreenshotsAsync();
+
+        TodayScreenshots.Clear();
+        foreach (var s in screenshots)
+        {
+            TodayScreenshots.Add(s);
+        }
+
+        ScreenshotCountText = TodayScreenshots.Count == 0
+            ? "No screenshots today"
+            : $"{TodayScreenshots.Count} screenshot{(TodayScreenshots.Count == 1 ? "" : "s")} taken today";
     }
 
     public void Dispose()

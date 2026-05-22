@@ -8,7 +8,7 @@ public interface IPlatformActivityMonitor
 
     string GetActiveWindowTitle();
 
-    string? CaptureScreenshot(string screenshotFolder);
+    string CaptureScreenshot(string screenshotFolder);
 
-    string? LastError { get; }
+    string LastError { get; }
 }

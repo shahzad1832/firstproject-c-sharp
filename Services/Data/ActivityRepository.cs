@@ -30,6 +30,20 @@ public sealed class ActivityRepository
             .ToListAsync<ActivityRecord>();
     }
 
+    public async Task<List<ActivityRecord>> GetTodayScreenshotsAsync()
+    {
+        DateTime today = DateTime.Today;
+        DateTime tomorrow = today.AddDays(1);
+
+        using var db = new AppDbContext();
+        return await db.Activities
+            .Where(a => a.StartTime >= today && a.StartTime < tomorrow)
+            .Where(a => a.RecordType == "Screenshot")
+            .Where(a => a.ScreenshotPath != null && a.ScreenshotPath != "")
+            .OrderByDescending(a => a.StartTime)
+            .ToListAsync<ActivityRecord>();
+    }
+
     public async Task ClearAllAsync()
     {
         using var db = new AppDbContext();

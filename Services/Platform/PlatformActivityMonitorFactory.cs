@@ -42,9 +42,9 @@ public static class PlatformActivityMonitorFactory
 
         public string GetActiveWindowTitle() => "Desktop / Unknown";
 
-        public string? CaptureScreenshot(string screenshotFolder) => null;
+        public string CaptureScreenshot(string screenshotFolder) => null;
 
-        public string? LastError => null;
+        public string LastError => null;
     }
 
     private sealed class NoopIdleTimeProvider : IIdleTimeProvider

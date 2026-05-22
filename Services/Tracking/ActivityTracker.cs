@@ -4,7 +4,6 @@ using firstProject.Models;
 using firstProject.Services.Data;
 using firstProject.Services.Platform;
 using firstProject.Services.Settings;
-
 namespace firstProject.Services.Tracking;
 
 public sealed class ActivityTracker : IDisposable
@@ -41,9 +40,9 @@ public sealed class ActivityTracker : IDisposable
         _timer.Elapsed += OnTimerElapsed;
     }
 
-    public event Action<string>? CurrentWindowChanged;
-    public event Action<string?>? StatusChanged;
-    public event Action<bool>? TrackingStateChanged;
+    public event Action<string> CurrentWindowChanged;
+    public event Action<string> StatusChanged;
+    public event Action<bool> TrackingStateChanged;
 
     public bool IsTracking => _isTracking;
 
@@ -102,7 +101,7 @@ public sealed class ActivityTracker : IDisposable
         TrackingStateChanged?.Invoke(false);
     }
 
-    private void OnTimerElapsed(object? sender, ElapsedEventArgs e)
+    private void OnTimerElapsed(object sender, ElapsedEventArgs e)
     {
         if (!_isTracking)
         {
@@ -147,7 +146,7 @@ public sealed class ActivityTracker : IDisposable
 
         string currentWindow = _platformActivityMonitor.GetActiveWindowTitle();
 
-        string? lastError = _platformActivityMonitor.LastError;
+        string lastError = _platformActivityMonitor.LastError;
         StatusChanged?.Invoke(string.IsNullOrWhiteSpace(lastError) ? null : lastError);
 
         if (!string.Equals(currentWindow, _lastWindowTitle, StringComparison.Ordinal))
@@ -161,7 +160,7 @@ public sealed class ActivityTracker : IDisposable
 
         if (_settings.ScreenshotsEnabled && DateTime.Now >= _nextScreenshotCapture)
         {
-            string? screenshotPath = _platformActivityMonitor.CaptureScreenshot(_screenshotFolder);
+            string screenshotPath = _platformActivityMonitor.CaptureScreenshot(_screenshotFolder);
             if (!string.IsNullOrWhiteSpace(screenshotPath))
             {
                 _repository.AddRecord(CreateRecord(
@@ -192,7 +191,7 @@ public sealed class ActivityTracker : IDisposable
         DateTime endTime,
         double durationSeconds,
         string recordType,
-        string? screenshotPath = null)
+        string screenshotPath = null)
     {
         return new ActivityRecord
                 {

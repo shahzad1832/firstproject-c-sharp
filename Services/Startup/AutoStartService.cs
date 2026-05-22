@@ -41,7 +41,7 @@ public sealed class AutoStartService
             return;
         }
 
-        string? processPath = Environment.ProcessPath;
+        string processPath = Environment.ProcessPath;
         if (string.IsNullOrWhiteSpace(processPath))
         {
             return;
@@ -53,7 +53,7 @@ public sealed class AutoStartService
     [SupportedOSPlatform("macos")]
     private static void ApplyMac(bool enabled)
     {
-        string? processPath = Environment.ProcessPath;
+        string processPath = Environment.ProcessPath;
         if (string.IsNullOrWhiteSpace(processPath))
         {
             return;
