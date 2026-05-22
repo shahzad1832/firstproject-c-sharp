@@ -9,6 +9,90 @@ namespace firstProject.Services.Platform;
 [SupportedOSPlatform("macos")]
 public sealed class MacPlatformActivityMonitor : IPlatformActivityMonitor
 {
+    private static readonly string DetectorPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "active_window_detector");
+
+    static MacPlatformActivityMonitor()
+    {
+        try
+        {
+            if (!File.Exists(DetectorPath))
+            {
+                string swiftCode = """
+                import AppKit
+                import Cocoa
+                import CoreGraphics
+
+                func getActiveWindow() -> String {
+                    guard let frontmostApp = NSWorkspace.shared.frontmostApplication else {
+                        return "Desktop / Unknown"
+                    }
+                    
+                    let frontmostPid = frontmostApp.processIdentifier
+                    let appName = frontmostApp.localizedName ?? "Unknown"
+                    
+                    let options = CGWindowListOption(arrayLiteral: .excludeDesktopElements, .optionOnScreenOnly)
+                    guard let windowListInfo = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: AnyObject]] else {
+                        return appName
+                    }
+                    
+                    for info in windowListInfo {
+                        guard let pid = info[kCGWindowOwnerPID as String] as? Int, pid == frontmostPid else {
+                            continue
+                        }
+                        
+                        guard let layer = info[kCGWindowLayer as String] as? Int, layer == 0 else {
+                            continue
+                        }
+                        
+                        if let windowName = info[kCGWindowName as String] as? String, !windowName.isEmpty {
+                            return "\(appName) - \(windowName)"
+                        }
+                    }
+                    
+                    return appName
+                }
+
+                print(getActiveWindow())
+                """;
+
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                string swiftPath = Path.Combine(baseDir, "active_window.swift");
+                File.WriteAllText(swiftPath, swiftCode);
+
+                var compileStartInfo = new ProcessStartInfo
+                {
+                    FileName = "/usr/bin/swiftc",
+                    Arguments = $"\"{swiftPath}\" -o \"{DetectorPath}\"",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                using var compileProcess = Process.Start(compileStartInfo);
+                compileProcess?.WaitForExit();
+
+                if (File.Exists(swiftPath))
+                {
+                    File.Delete(swiftPath);
+                }
+
+                var chmodStartInfo = new ProcessStartInfo
+                {
+                    FileName = "/bin/chmod",
+                    Arguments = $"+x \"{DetectorPath}\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                using var chmodProcess = Process.Start(chmodStartInfo);
+                chmodProcess?.WaitForExit();
+            }
+        }
+        catch
+        {
+            // Fail silently
+        }
+    }
+
     [DllImport("/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics")]
     private static extern bool CGPreflightScreenCaptureAccess();
 
@@ -45,20 +129,26 @@ public sealed class MacPlatformActivityMonitor : IPlatformActivityMonitor
     public string GetActiveWindowTitle()
     {
         LastError = null;
+
+        if (File.Exists(DetectorPath))
+        {
+            var result = RunCommand(DetectorPath, string.Empty);
+            if (result.Success && !string.IsNullOrWhiteSpace(result.Output))
+            {
+                return result.Output.Trim();
+            }
+        }
+
+        // Fallback to basic app name using AppleScript if native tool is missing
         const string script = "tell application \"System Events\" " +
                               "to tell (first application process whose frontmost is true) " +
                               "to get {name, name of front window}";
 
-        var result = RunCommand("/usr/bin/osascript", $"-e \"{script}\"");
+        var legacyResult = RunCommand("/usr/bin/osascript", $"-e \"{script}\"");
 
-        if (result.Success && !string.IsNullOrWhiteSpace(result.Output))
+        if (legacyResult.Success && !string.IsNullOrWhiteSpace(legacyResult.Output))
         {
-            return NormalizeWindowTitle(result.Output);
-        }
-
-        if (!string.IsNullOrWhiteSpace(result.Error))
-        {
-            LastError = "Enable Accessibility and Automation permissions in System Settings -> Privacy & Security.";
+            return NormalizeWindowTitle(legacyResult.Output);
         }
 
         return "Desktop / Unknown";
