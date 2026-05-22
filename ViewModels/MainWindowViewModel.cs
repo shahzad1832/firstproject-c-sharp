@@ -44,6 +44,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private string _lastSyncText = "Not synced yet";
     private bool _isTracking;
     private string _trackingButtonText = "Start Tracking";
+    private string _userFullName = string.Empty;
     private string _organizationId = string.Empty;
     private string _employeeId = string.Empty;
     private string _deviceId = string.Empty;
@@ -127,6 +128,20 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         get => _trackingButtonText;
         private set => SetProperty(ref _trackingButtonText, value);
     }
+
+    public string UserFullName
+    {
+        get => _userFullName;
+        set
+        {
+            if (SetProperty(ref _userFullName, value))
+            {
+                OnPropertyChanged(nameof(UserDisplayName));
+            }
+        }
+    }
+
+    public string UserDisplayName => string.IsNullOrWhiteSpace(UserFullName) ? "user" : UserFullName;
 
     public string OrganizationId
     {
@@ -289,6 +304,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     private void LoadSettingsToProperties()
     {
+        UserFullName = _settings.UserFullName;
         OrganizationId = _settings.OrganizationId;
         EmployeeId = _settings.EmployeeId;
         DeviceId = _settings.DeviceId;
@@ -304,6 +320,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     private void SaveSettings()
     {
+        _settings.UserFullName = UserFullName.Trim();
         _settings.OrganizationId = OrganizationId.Trim();
         _settings.EmployeeId = EmployeeId.Trim();
         _settings.ApiBaseUrl = ApiBaseUrl.Trim();

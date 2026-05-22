@@ -1,0 +1,72 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:firstProject.ViewModels"
+        x:Class="firstProject.Views.UserProfileWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Employee Details"
+        Width="360"
+        Height="420"
+        MinWidth="320"
+        MinHeight="380"
+        Background="#F2F2F4">
+
+    <Window.Styles>
+        <Style Selector="TextBlock">
+            <Setter Property="Foreground" Value="#333743"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="CornerRadius" Value="2"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="MinHeight" Value="31"/>
+            <Setter Property="Background" Value="#ECECEF"/>
+            <Setter Property="BorderBrush" Value="#E3E1EA"/>
+        </Style>
+        <Style Selector="Button">
+            <Setter Property="CornerRadius" Value="2"/>
+            <Setter Property="Padding" Value="12,7"/>
+            <Setter Property="FontSize" Value="10"/>
+        </Style>
+    </Window.Styles>
+
+    <Border BorderBrush="#202020" BorderThickness="4" Background="#F2F2F4">
+        <Grid RowDefinitions="Auto, *, Auto" Margin="18">
+            <StackPanel Grid.Row="0" Spacing="4">
+                <TextBlock Text="Employee Details" FontSize="14" FontWeight="SemiBold"/>
+                <TextBlock Text="Enter required info for employee monitoring" FontSize="9" Foreground="#7B7E89"/>
+            </StackPanel>
+
+            <ScrollViewer Grid.Row="1" Margin="0,12,0,12">
+                <StackPanel Spacing="10">
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Full name"/>
+                        <TextBox Text="{Binding UserFullName}" Watermark="Enter full name"/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Organization ID"/>
+                        <TextBox Text="{Binding OrganizationId}" Watermark="Enter organization ID"/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Employee ID"/>
+                        <TextBox Text="{Binding EmployeeId}" Watermark="Enter employee ID"/>
+                    </StackPanel>
+
+                    <StackPanel Spacing="4">
+                        <TextBlock Text="Device ID"/>
+                        <TextBox Text="{Binding DeviceId}" IsReadOnly="True" Watermark="enter your device ID"/>
+                    </StackPanel>
+                     
+                    
+                  
+                </StackPanel>
+            </ScrollViewer>
+
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                <Button Content="Cancel" Click="OnCancelClick" Background="#D8D8DC" Foreground="#555866"/>
+                <Button Content="Save" Click="OnSaveClick" Background="#2FB7A8" Foreground="White"/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

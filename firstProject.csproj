@@ -10,6 +10,7 @@
   <ItemGroup>
     <Folder Include="Models\" />
     <AvaloniaResource Include="Assets\**" />
+    <None Include="active_window_detector" CopyToOutputDirectory="PreserveNewest" Condition="Exists('active_window_detector')" />
   </ItemGroup>
 
   <ItemGroup>

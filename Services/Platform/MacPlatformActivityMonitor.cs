@@ -11,88 +11,6 @@ public sealed class MacPlatformActivityMonitor : IPlatformActivityMonitor
 {
     private static readonly string DetectorPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "active_window_detector");
 
-    static MacPlatformActivityMonitor()
-    {
-        try
-        {
-            if (!File.Exists(DetectorPath))
-            {
-                string swiftCode = """
-                import AppKit
-                import Cocoa
-                import CoreGraphics
-
-                func getActiveWindow() -> String {
-                    guard let frontmostApp = NSWorkspace.shared.frontmostApplication else {
-                        return "Desktop / Unknown"
-                    }
-                    
-                    let frontmostPid = frontmostApp.processIdentifier
-                    let appName = frontmostApp.localizedName ?? "Unknown"
-                    
-                    let options = CGWindowListOption(arrayLiteral: .excludeDesktopElements, .optionOnScreenOnly)
-                    guard let windowListInfo = CGWindowListCopyWindowInfo(options, kCGNullWindowID) as? [[String: AnyObject]] else {
-                        return appName
-                    }
-                    
-                    for info in windowListInfo {
-                        guard let pid = info[kCGWindowOwnerPID as String] as? Int, pid == frontmostPid else {
-                            continue
-                        }
-                        
-                        guard let layer = info[kCGWindowLayer as String] as? Int, layer == 0 else {
-                            continue
-                        }
-                        
-                        if let windowName = info[kCGWindowName as String] as? String, !windowName.isEmpty {
-                            return "\(appName) - \(windowName)"
-                        }
-                    }
-                    
-                    return appName
-                }
-
-                print(getActiveWindow())
-                """;
-
-                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
-                string swiftPath = Path.Combine(baseDir, "active_window.swift");
-                File.WriteAllText(swiftPath, swiftCode);
-
-                var compileStartInfo = new ProcessStartInfo
-                {
-                    FileName = "/usr/bin/swiftc",
-                    Arguments = $"\"{swiftPath}\" -o \"{DetectorPath}\"",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-                using var compileProcess = Process.Start(compileStartInfo);
-                compileProcess?.WaitForExit();
-
-                if (File.Exists(swiftPath))
-                {
-                    File.Delete(swiftPath);
-                }
-
-                var chmodStartInfo = new ProcessStartInfo
-                {
-                    FileName = "/bin/chmod",
-                    Arguments = $"+x \"{DetectorPath}\"",
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-                using var chmodProcess = Process.Start(chmodStartInfo);
-                chmodProcess?.WaitForExit();
-            }
-        }
-        catch
-        {
-            // Fail silently
-        }
-    }
-
     [DllImport("/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics")]
     private static extern bool CGPreflightScreenCaptureAccess();
 
@@ -138,6 +56,10 @@ public sealed class MacPlatformActivityMonitor : IPlatformActivityMonitor
                 return result.Output.Trim();
             }
         }
+        else
+        {
+            LastError = "Missing active_window_detector in app bundle/output folder.";
+        }
 
         // Fallback to basic app name using AppleScript if native tool is missing
         const string script = "tell application \"System Events\" " +
@@ -148,6 +70,11 @@ public sealed class MacPlatformActivityMonitor : IPlatformActivityMonitor
 
         if (legacyResult.Success && !string.IsNullOrWhiteSpace(legacyResult.Output))
         {
+            if (!File.Exists(DetectorPath))
+            {
+                LastError = "Missing active_window_detector; using AppleScript fallback.";
+            }
+
             return NormalizeWindowTitle(legacyResult.Output);
         }
 
@@ -174,9 +101,9 @@ public sealed class MacPlatformActivityMonitor : IPlatformActivityMonitor
 
             return File.Exists(filePath) ? filePath : null;
         }
-        catch
+        catch (Exception ex)
         {
-            LastError = "Failed to capture screenshot.";
+            LastError = $"Failed to capture screenshot: {ex.Message}";
             return null;
         }
     }

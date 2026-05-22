@@ -50,6 +50,7 @@ dotnet run
 ```bash
 dotnet clean
 dotnet publish -c Release -r osx-arm64 --self-contained true
+./scripts/build-active-window-helper.sh
 ./scripts/create-macos-app.sh Release osx-arm64
 ```
 

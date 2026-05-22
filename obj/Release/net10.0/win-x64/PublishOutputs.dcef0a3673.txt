@@ -1,4 +1,5 @@
 /Users/leads-lp-02/DotNetProject/firstproject-c-sharp/bin/Release/net10.0/win-x64/publish/firstProject.exe
+/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/bin/Release/net10.0/win-x64/publish/active_window_detector
 /Users/leads-lp-02/DotNetProject/firstproject-c-sharp/bin/Release/net10.0/win-x64/publish/firstProject.dll
 /Users/leads-lp-02/DotNetProject/firstproject-c-sharp/bin/Release/net10.0/win-x64/publish/firstProject.runtimeconfig.json
 /Users/leads-lp-02/DotNetProject/firstproject-c-sharp/bin/Release/net10.0/win-x64/publish/firstProject.pdb

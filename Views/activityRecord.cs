@@ -24,7 +24,6 @@ public class ActivityRecord
     [NotMapped]
     public Bitmap? ScreenshotPreview => HasScreenshot ? new Bitmap(ScreenshotPath!) : null;
 
-    // Formatted duration - shows "1 min 30 sec" if > 60 seconds
     public string FormattedDuration
     {
         get

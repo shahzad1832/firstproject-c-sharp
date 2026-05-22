@@ -10,7 +10,7 @@
         Height="560"
         MinWidth="300"
         MinHeight="560"
-        Background="#F2F2F4"
+        Background="#F2F2F3"
         ExtendClientAreaToDecorationsHint="False">
 
     <Window.Resources>
