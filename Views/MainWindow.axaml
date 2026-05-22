@@ -15,6 +15,7 @@
 
     <Window.Resources>
         <converters:PathToBitmapConverter x:Key="PathToBitmapConverter"/>
+        <converters:ViewportToScreenshotSizeConverter x:Key="ViewportToScreenshotSizeConverter"/>
 
         <SolidColorBrush x:Key="PurpleBrush" Color="#7C68B5"/>
         <SolidColorBrush x:Key="TealBrush" Color="#2FB7A8"/>
@@ -227,7 +228,6 @@
 
                         <Border Grid.Row="1" Height="1" Background="#E2E2E5"/>
 
-                        <!-- Empty state -->
                         <StackPanel Grid.Row="2"
                                     IsVisible="{Binding !TodayScreenshots.Count}"
                                     VerticalAlignment="Center"
@@ -250,8 +250,8 @@
                                        TextAlignment="Center"/>
                         </StackPanel>
 
-                        <!-- Screenshot grid -->
                         <ScrollViewer Grid.Row="2"
+                                      x:Name="ScreenshotsScroll"
                                       IsVisible="{Binding TodayScreenshots.Count}"
                                       Margin="14,10,14,10">
                             <ItemsControl ItemsSource="{Binding TodayScreenshots}">
@@ -267,12 +267,12 @@
                                                 BorderThickness="1"
                                                 CornerRadius="4"
                                                 Margin="3"
-                                                Width="121"
+                                                Width="{Binding ElementName=ScreenshotsScroll, Path=Viewport, Converter={StaticResource ViewportToScreenshotSizeConverter}, ConverterParameter=Width}"
                                                 Padding="0,0,0,6"
                                                 ClipToBounds="True">
                                             <StackPanel Spacing="4">
                                                 <Image Source="{Binding ScreenshotPath, Converter={StaticResource PathToBitmapConverter}}"
-                                                       Height="72"
+                                                       Height="{Binding ElementName=ScreenshotsScroll, Path=Viewport, Converter={StaticResource ViewportToScreenshotSizeConverter}, ConverterParameter=Height}"
                                                        Stretch="UniformToFill"/>
                                                 <StackPanel Margin="6,0">
                                                     <TextBlock Text="{Binding StartTime, StringFormat='{}{0:HH:mm:ss}'}"
