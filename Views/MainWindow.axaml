@@ -84,6 +84,26 @@
             <Setter Property="Background" Value="#E2DFEE"/>
             <Setter Property="Foreground" Value="{StaticResource PurpleBrush}"/>
         </Style>
+        <Style Selector="Button.CircleButton">
+            <Setter Property="Width" Value="38"/>
+            <Setter Property="Height" Value="38"/>
+            <Setter Property="CornerRadius" Value="19"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="{StaticResource PurpleBrush}"/>
+            <Setter Property="Foreground" Value="white"/>
+        </Style>
+        <Style Selector="Button.CircleButton:disabled">
+            <Setter Property="Background" Value="Gray"/>
+            <Setter Property="Foreground" Value="white"/>
+        </Style>
+        <Style Selector="Button.CircleButton:disabled /template/ ContentPresenter">
+            <Setter Property="Background" Value="gray"/>
+            <Setter Property="Foreground" Value="white"/>
+        </Style>
     </Window.Styles>
 
     <Border BorderBrush="#202020" BorderThickness="4" Background="#F2F2F4">
@@ -115,9 +135,9 @@
                     <Grid RowDefinitions="Auto, Auto, *">
                         <StackPanel Grid.Row="0" Margin="18,12,18,10" Spacing="10">
                             <Grid ColumnDefinitions="*, *">
-                                <TextBlock Text="{Binding TrackingButtonText}"
+                                <!-- <TextBlock Text="{Binding TrackingButtonText}"
                                            Foreground="{StaticResource MutedBrush}"
-                                           HorizontalAlignment="Center"/>
+                                           HorizontalAlignment="Center"/> -->
                                 <TextBlock Grid.Column="1"
                                            Text="{Binding TodayDateText}"
                                            Foreground="{StaticResource MutedBrush}"
@@ -131,19 +151,19 @@
                                        HorizontalAlignment="Center"
                                        Margin="0,3,0,0"/>
 
-                            <Grid ColumnDefinitions="*, *, Auto" ColumnSpacing="10">
-                                <Button Grid.Column="0"
-                                        Content="Clock In"
-                                        Command="{Binding ClockInCommand}"
-                                        Background="{StaticResource TealBrush}"
-                                        Foreground="White"/>
-                                <Button Grid.Column="1"
-                                        Content="Take a Break"
-                                        Command="{Binding TakeBreakCommand}"
-                                        Background="#D8D8DC"
-                                        Foreground="#8A8D96"/>
-                                <StackPanel Grid.Column="2" Width="74">
-                                    <TextBlock Text="Break time left" Foreground="{StaticResource MutedBrush}" FontSize="9"/>
+                            <Grid ColumnDefinitions="Auto, Auto, *" ColumnSpacing="10">
+                                 <Button Grid.Column="0"
+                    Classes="CircleButton"
+                    Content="▶"
+                    Command="{Binding ClockInCommand}"
+                    IsEnabled="{Binding !IsTracking}"/>
+
+                <Button Grid.Column="1"
+                    Classes="CircleButton"
+                    Content="⏸"
+                    Command="{Binding TakeBreakCommand}"
+                    IsEnabled="{Binding IsTracking}"/>
+                                <StackPanel Grid.Column="2" HorizontalAlignment="Right">
                                     <TextBlock Text="{Binding IdleTotalTime}" FontWeight="SemiBold" FontSize="10"/>
                                 </StackPanel>
                             </Grid>
