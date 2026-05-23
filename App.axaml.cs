@@ -48,7 +48,7 @@ public partial class App : Application
             return;
         }
 
-        var iconUri = new Uri("avares://firstProject/Assets/avalonia-logo.ico");
+        var iconUri = new Uri("avares://firstProject/Assets/assign.png");
         var icon = new WindowIcon(AssetLoader.Open(iconUri));
 
         _trayIcon = new TrayIcon

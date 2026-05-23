@@ -43,7 +43,21 @@ public sealed class SettingsService
             settings.IdleThresholdSeconds = 120;
         }
 
-        if (EnsureDeviceId(settings))
+        if (settings.ScreenshotMinMinutes == 10 && settings.ScreenshotMaxMinutes == 20)
+        {
+            settings.ScreenshotMinMinutes = 5;
+            settings.ScreenshotMaxMinutes = 10;
+        }
+
+        bool shouldSave = EnsureDeviceId(settings);
+        if (settings.ScreenshotMinMinutes == 5 && settings.ScreenshotMaxMinutes == 10 &&
+            settings.IdleThresholdSeconds == 120 &&
+            File.Exists(_settingsPath))
+        {
+            shouldSave = true;
+        }
+
+        if (shouldSave)
         {
             Save(settings);
         }

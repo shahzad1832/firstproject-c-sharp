@@ -37,7 +37,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private string _currentWindowTitle = "Not tracking";
     private string _statusMessage = string.Empty;
     private string _todayTotalTime = "0m 0s";
-    private string _attendanceClockText = "00:00:00 h";
+    private string _attendanceClockText = "00:00:00s";
     private string _idleTotalTime = "0m 0s";
     private string _pendingSyncCount = "0";
     private string _settingsStatusMessage = string.Empty;
