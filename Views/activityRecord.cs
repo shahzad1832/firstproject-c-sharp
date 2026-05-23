@@ -36,4 +36,10 @@ public class ActivityRecord
             return $"{minutes}m {seconds}s";
         }
     }
+
+    [NotMapped]
+    public string TimeRangeText => $"{StartTime:hh:mm tt} to {EndTime:hh:mm tt}";
+
+    [NotMapped]
+    public string IdleDurationText => $"Idle time {FormattedDuration}";
 }

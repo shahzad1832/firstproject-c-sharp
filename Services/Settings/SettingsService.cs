@@ -38,6 +38,11 @@ public sealed class SettingsService
             settings = new AppSettings();
         }
 
+        if (settings.IdleThresholdSeconds == 300)
+        {
+            settings.IdleThresholdSeconds = 120;
+        }
+
         if (EnsureDeviceId(settings))
         {
             Save(settings);

@@ -65,7 +65,7 @@ public sealed class ActivityTracker : IDisposable
         {
             DateTime breakEndTime = DateTime.Now;
             double breakDuration = (breakEndTime - _breakStartTime.Value).TotalSeconds;
-            if (breakDuration > 0)
+            if (breakDuration >= _settings.IdleThresholdSeconds)
             {
                 _repository.AddRecord(CreateRecord(
                     "Idle",
@@ -124,9 +124,10 @@ public sealed class ActivityTracker : IDisposable
         {
             if (!_isIdle)
             {
-                SavePendingRecord();
+                DateTime idleStartTime = DateTime.Now - idleTime;
+                SavePendingRecord(idleStartTime);
                 _lastWindowTitle = "Idle";
-                _startTime = DateTime.Now;
+                _startTime = idleStartTime;
                 _isIdle = true;
                 CurrentWindowChanged?.Invoke("Idle");
             }
@@ -207,17 +208,31 @@ public sealed class ActivityTracker : IDisposable
         };
     }
 
-    private void SavePendingRecord()
+    private void SavePendingRecord(DateTime? endTimeOverride = null)
     {
         if (string.IsNullOrWhiteSpace(_lastWindowTitle))
         {
             return;
         }
 
-        DateTime endTime = DateTime.Now;
+        DateTime endTime = endTimeOverride ?? DateTime.Now;
         string recordType = string.Equals(_lastWindowTitle, "Idle", StringComparison.Ordinal)
             ? "Idle"
             : "Activity";
+
+        if (endTime <= _startTime)
+        {
+            return;
+        }
+
+        if (string.Equals(recordType, "Idle", StringComparison.Ordinal))
+        {
+            double idleSeconds = (endTime - _startTime).TotalSeconds;
+            if (idleSeconds < _settings.IdleThresholdSeconds)
+            {
+                return;
+            }
+        }
 
         _repository.AddRecord(CreateRecord(
             _lastWindowTitle,

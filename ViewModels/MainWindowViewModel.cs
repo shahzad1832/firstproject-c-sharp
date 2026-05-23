@@ -25,6 +25,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     public ObservableCollection<HistoryDayGroup> HistoryItems { get; } = new();
     public ObservableCollection<ActivityRecord> TodayScreenshots { get; } = new();
+    public ObservableCollection<ActivityRecord> TodayIdleRecords { get; } = new();
 
     private string _screenshotCountText = "No screenshots today";
     public string ScreenshotCountText
@@ -51,7 +52,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private string _apiBaseUrl = string.Empty;
     private string _workdayStart = "09:00";
     private string _workdayEnd = "18:00";
-    private int _idleThresholdSeconds = 100;
+    private int _idleThresholdSeconds = 120;
     private int _screenshotMinMinutes = 10;
     private int _screenshotMaxMinutes = 20;
     private bool _autoStartEnabled = true;
@@ -365,7 +366,19 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         }
 
         await UpdateTodayTotalTimeAsync();
+        await RefreshIdleRecordsAsync();
         await RefreshScreenshotsAsync();
+    }
+
+    private async Task RefreshIdleRecordsAsync()
+    {
+        var idleRecords = await _repository.GetTodayIdleRecordsAsync();
+
+        TodayIdleRecords.Clear();
+        foreach (var record in idleRecords)
+        {
+            TodayIdleRecords.Add(record);
+        }
     }
 
     private async Task ClearHistoryAsync()

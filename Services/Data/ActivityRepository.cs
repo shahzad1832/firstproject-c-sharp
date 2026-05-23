@@ -83,6 +83,19 @@ public sealed class ActivityRepository
             .SumAsync(a => (double?)a.DurationSeconds) ?? 0;
     }
 
+    public async Task<List<ActivityRecord>> GetTodayIdleRecordsAsync()
+    {
+        DateTime today = DateTime.Today;
+        DateTime tomorrow = today.AddDays(1);
+
+        using var db = new AppDbContext();
+        return await db.Activities
+            .Where(a => a.StartTime >= today && a.StartTime < tomorrow)
+            .Where(a => a.AppNames == "Idle" || a.RecordType == "Idle")
+            .OrderByDescending(a => a.StartTime)
+            .ToListAsync<ActivityRecord>();
+    }
+
     public void AddRecord(ActivityRecord record)
     {
         using var db = new AppDbContext();

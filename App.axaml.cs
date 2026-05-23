@@ -54,7 +54,7 @@ public partial class App : Application
         _trayIcon = new TrayIcon
         {
             Icon = icon,
-            ToolTipText = "Assing In"
+            ToolTipText = "Assign In"
         };
 
         var menu = new NativeMenu();
@@ -77,7 +77,7 @@ public partial class App : Application
         _trayIcon.Menu = menu;
     }
 
-    private static MainWindowViewModel GetViewModel()
+    private static MainWindowViewModel? GetViewModel()
     {
         if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
