@@ -23,6 +23,7 @@ public sealed class ActivityTracker : IDisposable
     private bool _isTracking;
     private bool _isIdle;
     private bool _isWithinWorkHours;
+    private bool _isSuspended;
 
     public ActivityTracker(
         IPlatformActivityMonitor platformActivityMonitor,
@@ -98,6 +99,7 @@ public sealed class ActivityTracker : IDisposable
             _nextScreenshotCapture = CalculateNextScreenshotTime();
             _isIdle = false;
             _isWithinWorkHours = IsWithinWorkHours(now);
+            _isSuspended = false;
         }
         _timer.Start();
         TrackingStateChanged?.Invoke(true);
@@ -118,19 +120,22 @@ public sealed class ActivityTracker : IDisposable
             _isIdle = false;
             _isTracking = false;
             _isWithinWorkHours = false;
+            _isSuspended = false;
         }
         TrackingStateChanged?.Invoke(false);
     }
 
-    private void OnTimerElapsed(object sender, ElapsedEventArgs e)
+    private void OnTimerElapsed(object? sender, ElapsedEventArgs e)
     {
         bool isTracking;
+        bool isSuspended;
         lock (_stateLock)
         {
             isTracking = _isTracking;
+            isSuspended = _isSuspended;
         }
 
-        if (!isTracking)
+        if (!isTracking && !isSuspended)
         {
             return;
         }
@@ -151,6 +156,45 @@ public sealed class ActivityTracker : IDisposable
         }
 
         TimeSpan idleTime = _idleTimeProvider.GetIdleTime();
+        int suspendSeconds = Math.Max(_settings.SleepSuspendSeconds, _settings.IdleThresholdSeconds + 30);
+        if (!isSuspended && idleTime.TotalSeconds >= suspendSeconds)
+        {
+            SavePendingRecord();
+            lock (_stateLock)
+            {
+                _lastWindowTitle = string.Empty;
+                _isIdle = false;
+                _isTracking = false;
+                _isSuspended = true;
+                _startTime = now;
+            }
+            TrackingStateChanged?.Invoke(false);
+            CurrentWindowChanged?.Invoke("Suspended");
+            StatusChanged?.Invoke(null);
+            return;
+        }
+
+        if (isSuspended)
+        {
+            if (idleTime.TotalSeconds >= _settings.IdleThresholdSeconds)
+            {
+                StatusChanged?.Invoke(null);
+                return;
+            }
+
+            lock (_stateLock)
+            {
+                _isSuspended = false;
+                _isTracking = true;
+                _isIdle = false;
+                _lastWindowTitle = string.Empty;
+                _startTime = now;
+                _nextScreenshotCapture = CalculateNextScreenshotTime();
+            }
+            TrackingStateChanged?.Invoke(true);
+            isTracking = true;
+        }
+
         bool isIdle = idleTime.TotalSeconds >= _settings.IdleThresholdSeconds;
         bool wasIdle;
 

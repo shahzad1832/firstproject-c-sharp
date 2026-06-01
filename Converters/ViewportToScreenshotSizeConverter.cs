@@ -7,7 +7,7 @@ namespace firstProject.Converters;
 
 public class ViewportToScreenshotSizeConverter : IValueConverter
 {
-    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         double viewportWidth = value switch
         {
@@ -38,7 +38,7 @@ public class ViewportToScreenshotSizeConverter : IValueConverter
         return Math.Round(width);
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         throw new NotSupportedException();
     }

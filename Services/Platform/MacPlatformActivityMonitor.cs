@@ -81,7 +81,7 @@ public sealed class MacPlatformActivityMonitor : IPlatformActivityMonitor
         return "Desktop / Unknown";
     }
 
-    public string CaptureScreenshot(string screenshotFolder)
+    public string? CaptureScreenshot(string screenshotFolder)
     {
         try
         {
@@ -108,7 +108,7 @@ public sealed class MacPlatformActivityMonitor : IPlatformActivityMonitor
         }
     }
 
-    public string LastError { get; private set; }
+    public string? LastError { get; private set; }
 
     private static CommandResult RunCommand(string fileName, string arguments)
     {

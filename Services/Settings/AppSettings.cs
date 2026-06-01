@@ -12,6 +12,7 @@ public sealed class AppSettings
     public int ScreenshotMinMinutes { get; set; } = 5;
     public int ScreenshotMaxMinutes { get; set; } = 10;
     public int IdleThresholdSeconds { get; set; } = 120;
+    public int SleepSuspendSeconds { get; set; } = 120;
     public bool AutoStartEnabled { get; set; } = true;
     public bool ScreenshotsEnabled { get; set; } = true;
 }

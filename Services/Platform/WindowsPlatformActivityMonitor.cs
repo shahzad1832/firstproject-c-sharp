@@ -52,7 +52,7 @@ public sealed class WindowsPlatformActivityMonitor : IPlatformActivityMonitor
         return "Desktop / Unknown";
     }
 
-    public string? CaptureScreenshot(string screenshotFolder)
+    public string CaptureScreenshot(string screenshotFolder)
     {
         try
         {
@@ -88,5 +88,5 @@ public sealed class WindowsPlatformActivityMonitor : IPlatformActivityMonitor
         }
     }
 
-    public string LastError { get; private set; }
+    public string? LastError { get; private set; }
 }
