@@ -15,7 +15,7 @@ namespace firstProject;
 public partial class App : Application
 {
     internal static bool IsExitRequested { get; private set; }
-    private TrayIcon _trayIcon;
+    private TrayIcon? _trayIcon;
 
     public override void Initialize()
     {
