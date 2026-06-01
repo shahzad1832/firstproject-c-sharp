@@ -7,11 +7,9 @@ namespace firstProject.Data;
 
 public class AppDbContext : DbContext
 {
-    // Hamara table
     public DbSet<ActivityRecord> Activities { get; set; }
     public DbSet<SyncQueueItem> SyncQueueItems { get; set; }
 
-    // Database file ka rasta (Path)
     protected override void OnConfiguring(DbContextOptionsBuilder options)
         => options.UseSqlite($"Data Source={GetDatabasePath()}");
 

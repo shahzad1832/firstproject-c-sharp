@@ -27,10 +27,12 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private double _todayBaseProductiveSeconds;
     private double _todayBaseIdleSeconds;
     private bool _manualPause;
+    private readonly System.Collections.Generic.List<ActivityRecord> _cachedHistory = new();
 
     public ObservableCollection<HistoryDayGroup> HistoryItems { get; } = new();
     public ObservableCollection<ActivityRecord> TodayScreenshots { get; } = new();
     public ObservableCollection<ActivityRecord> TodayIdleRecords { get; } = new();
+    public ObservableCollection<WorkdaySummary> WorkdaySummaries { get; } = new();
 
     private string _screenshotCountText = "No screenshots today";
     public string ScreenshotCountText
@@ -393,6 +395,8 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private async Task RefreshHistoryAsync()
     {
         var history = await _repository.GetHistoryAsync();
+        _cachedHistory.Clear();
+        _cachedHistory.AddRange(history);
 
         HistoryItems.Clear();
         foreach (var dayGroup in history
@@ -406,9 +410,96 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             });
         }
 
+        UpdateWorkdaySummaries(_cachedHistory, _tracker.GetLiveSnapshot());
+
         await UpdateBaseTotalsAsync();
         await RefreshIdleRecordsAsync();
         await RefreshScreenshotsAsync();
+    }
+
+    private void UpdateWorkdaySummaries(
+        System.Collections.Generic.List<ActivityRecord> history,
+        ActivitySnapshot snapshot)
+    {
+        WorkdaySummaries.Clear();
+
+        double gapSeconds = Math.Max(_settings.SleepSuspendSeconds, _settings.IdleThresholdSeconds);
+        DateTime now = DateTime.Now;
+
+        foreach (var dayGroup in history
+                     .GroupBy(record => record.StartTime.Date)
+                     .OrderByDescending(group => group.Key))
+        {
+            var ordered = dayGroup.OrderBy(record => record.StartTime).ToList();
+            var sessions = new System.Collections.Generic.List<SessionSegment>();
+
+            foreach (var record in ordered)
+            {
+                if (sessions.Count == 0)
+                {
+                    sessions.Add(new SessionSegment(record.StartTime, record.EndTime, record.DurationSeconds));
+                    continue;
+                }
+
+                var last = sessions[^1];
+                if ((record.StartTime - last.End).TotalSeconds >= gapSeconds)
+                {
+                    sessions.Add(new SessionSegment(record.StartTime, record.EndTime, record.DurationSeconds));
+                }
+                else
+                {
+                    last.Extend(record.EndTime, record.DurationSeconds);
+                }
+            }
+
+            if (dayGroup.Key.Date == DateTime.Today &&
+                snapshot.IsTracking && snapshot.IsWithinWorkHours &&
+                !snapshot.IsIdle && !string.IsNullOrWhiteSpace(snapshot.CurrentWindowTitle))
+            {
+                DateTime liveStart = snapshot.SegmentStart < DateTime.Today
+                    ? DateTime.Today
+                    : snapshot.SegmentStart;
+                double liveSeconds = Math.Max(0, (now - liveStart).TotalSeconds);
+
+                if (sessions.Count == 0)
+                {
+                    var open = new SessionSegment(liveStart, liveStart, 0);
+                    open.MarkOpen();
+                    open.Extend(liveStart, liveSeconds);
+                    sessions.Add(open);
+                }
+                else
+                {
+                    var last = sessions[^1];
+                    if ((liveStart - last.End).TotalSeconds >= gapSeconds)
+                    {
+                        var open = new SessionSegment(liveStart, liveStart, 0);
+                        open.MarkOpen();
+                        open.Extend(liveStart, liveSeconds);
+                        sessions.Add(open);
+                    }
+                    else
+                    {
+                        last.MarkOpen();
+                        last.Extend(liveStart, liveSeconds);
+                    }
+                }
+            }
+
+            for (int i = 0; i < sessions.Count; i++)
+            {
+                var session = sessions[i];
+                WorkdaySummaries.Add(new WorkdaySummary
+                {
+                    Date = dayGroup.Key,
+                    ClockInText = session.Start.ToString("HH:mm"),
+                    ClockOutText = session.IsOpen ? string.Empty : session.End.ToString("HH:mm"),
+                    TotalText = FormatSummaryClock(session.TotalSeconds),
+                    IsOpen = session.IsOpen,
+                    ShowDateHeader = i == 0
+                });
+            }
+        }
     }
 
     private async Task RefreshIdleRecordsAsync()
@@ -492,6 +583,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         TodayTotalTime = FormatDuration(productiveSeconds);
         AttendanceClockText = FormatClock(productiveSeconds);
         IdleTotalTime = FormatDuration(idleSeconds);
+        UpdateWorkdaySummaries(_cachedHistory, snapshot);
     }
 
     private static string FormatDuration(double seconds)
@@ -521,6 +613,45 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         int minutes = (totalSeconds % 3600) / 60;
         int remainingSeconds = totalSeconds % 60;
         return $"{hours:00}:{minutes:00}:{remainingSeconds:00} s";
+    }
+
+    private static string FormatSummaryClock(double seconds)
+    {
+        int totalSeconds = Math.Max(0, (int)Math.Round(seconds));
+        int hours = totalSeconds / 3600;
+        int minutes = (totalSeconds % 3600) / 60;
+        int remainingSeconds = totalSeconds % 60;
+        return $"{hours:00}:{minutes:00}:{remainingSeconds:00}";
+    }
+
+    private sealed class SessionSegment
+    {
+        public SessionSegment(DateTime start, DateTime end, double totalSeconds)
+        {
+            Start = start;
+            End = end;
+            TotalSeconds = totalSeconds;
+        }
+
+        public DateTime Start { get; private set; }
+        public DateTime End { get; private set; }
+        public double TotalSeconds { get; private set; }
+        public bool IsOpen { get; private set; }
+
+        public void Extend(DateTime end, double additionalSeconds)
+        {
+            if (end > End)
+            {
+                End = end;
+            }
+
+            TotalSeconds += additionalSeconds;
+        }
+
+        public void MarkOpen()
+        {
+            IsOpen = true;
+        }
     }
 
     private async Task RefreshScreenshotsAsync()

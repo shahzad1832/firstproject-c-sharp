@@ -5,6 +5,10 @@ using firstProject.Services.Data;
 using firstProject.Services.Platform;
 using firstProject.Services.Settings;
 namespace firstProject.Services.Tracking;
+#pragma warning disable CS8625 
+#pragma warning disable CS8604 
+
+
 
 public sealed class ActivityTracker : IDisposable
 {
@@ -302,7 +306,7 @@ public sealed class ActivityTracker : IDisposable
         DateTime endTime,
         double durationSeconds,
         string recordType,
-        string screenshotPath = null)
+        string? screenshotPath = null)
     {
         return new ActivityRecord
                 {
