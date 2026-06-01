@@ -8,7 +8,7 @@ public partial class MainWindow : Window
 {
     public MainWindow()
     {
-       InitializeComponent();
+        InitializeComponent();
         Closing += OnClosing;
     }
 
@@ -36,5 +36,14 @@ public partial class MainWindow : Window
 
         e.Cancel = true;
         Hide();
+    }
+
+    private void Button_Click(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel viewModel)
+        {
+            return;
+        }
+
     }
 }

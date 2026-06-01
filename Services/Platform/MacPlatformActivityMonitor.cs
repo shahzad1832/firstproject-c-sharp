@@ -61,7 +61,6 @@ public sealed class MacPlatformActivityMonitor : IPlatformActivityMonitor
             LastError = "Missing active_window_detector in app bundle/output folder.";
         }
 
-        // Fallback to basic app name using AppleScript if native tool is missing
         const string script = "tell application \"System Events\" " +
                               "to tell (first application process whose frontmost is true) " +
                               "to get {name, name of front window}";

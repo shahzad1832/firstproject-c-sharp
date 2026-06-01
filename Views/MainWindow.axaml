@@ -126,10 +126,10 @@
                                 Content="↻"
                                 Command="{Binding ShowHistoryCommand}"
                                 ToolTip.Tip="Refresh Data"/>
-                        <TextBlock Text="user"
-                                   VerticalAlignment="Center"
-                                   Foreground="#777A82"
-                                   FontSize="9"/>
+                        <Button Classes="HeaderButton"
+                                Content="user"
+                                Click="OnUserButtonClick"
+                                />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -139,7 +139,6 @@
                     <Grid RowDefinitions="Auto, Auto, *">
                         <StackPanel Grid.Row="0" Margin="18,12,18,10" Spacing="10">
                             <Grid>
-                                <!-- <TextBlock Grid.Column="0" Text="Office Time" Foreground="Black"/> -->
 
                                 <TextBlock   Grid.Column="2" Padding="0,0,4,0" HorizontalAlignment="Right"
                                              Text="{Binding TodayDateText}"
@@ -196,8 +195,8 @@
                                                            Margin="0,8,0,4"
                                                            FontWeight="Bold"
                                                            IsVisible="{Binding ShowDateHeader}"/>
-                                                <Border Background="#F1F1F3" BorderBrush="#D9D9DE" BorderThickness="1" CornerRadius="3" Padding="12,9" Margin="0,0,0,7">
-                                                    <Grid ColumnDefinitions="*,*,*">
+                                                <Border Background="White" BorderBrush="#D9D9DE" BorderThickness="1" CornerRadius="8" Padding="12,9" Margin="0,0,0,6">
+                                                    <Grid ColumnDefinitions="*,*,*" >
                                                         <StackPanel Grid.Column="0" HorizontalAlignment="Center">
                                                             <TextBlock Text="Clock In"
                                                                        Foreground="{StaticResource MutedBrush}"
