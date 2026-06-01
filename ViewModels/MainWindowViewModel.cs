@@ -22,6 +22,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private readonly AutoStartService _autoStartService;
     private readonly AppSettings _settings;
     private readonly DispatcherTimer _summaryTimer;
+    private readonly DispatcherTimer _liveTimer;
+    private double _todayBaseProductiveSeconds;
+    private double _todayBaseIdleSeconds;
 
     public ObservableCollection<HistoryDayGroup> HistoryItems { get; } = new();
     public ObservableCollection<ActivityRecord> TodayScreenshots { get; } = new();
@@ -269,6 +272,13 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         _summaryTimer.Tick += async (_, _) => await RefreshHistoryAsync();
         _summaryTimer.Start();
 
+        _liveTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(1)
+        };
+        _liveTimer.Tick += (_, _) => UpdateLiveTotals();
+        _liveTimer.Start();
+
         _tracker.Start();
         _ = RefreshHistoryAsync();
     }
@@ -288,13 +298,13 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private void StartTracking()
     {
         _tracker.Start();
-        _ = RefreshHistoryAsync();
+        UpdateLiveTotals();
     }
 
     private void StopTracking()
     {
         _tracker.Stop();
-        _ = RefreshHistoryAsync();
+        _ = UpdateBaseTotalsAsync();
     }
 
     private void AddNewTask()
@@ -365,7 +375,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             });
         }
 
-        await UpdateTodayTotalTimeAsync();
+        await UpdateBaseTotalsAsync();
         await RefreshIdleRecordsAsync();
         await RefreshScreenshotsAsync();
     }
@@ -385,21 +395,55 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     {
         await _repository.ClearAllAsync();
         HistoryItems.Clear();
-        await UpdateTodayTotalTimeAsync();
+        await UpdateBaseTotalsAsync();
     }
 
-    private async Task UpdateTodayTotalTimeAsync()
+    private async Task UpdateBaseTotalsAsync()
     {
-        double seconds = await _repository.GetTodayTotalSecondsAsync();
-        TodayTotalTime = FormatDuration(seconds);
-        AttendanceClockText = FormatClock(seconds);
-
+        double productiveSeconds = await _repository.GetTodayTotalSecondsAsync();
         double idleSeconds = await _repository.GetTodayIdleSecondsAsync();
-        IdleTotalTime = FormatDuration(idleSeconds);
-
         int pendingSync = await _repository.GetPendingSyncCountAsync();
-        PendingSyncCount = pendingSync.ToString();
-        LastSyncText = pendingSync == 0 ? "All records synced" : $"Pending upload: {pendingSync}";
+
+        _todayBaseProductiveSeconds = productiveSeconds;
+        _todayBaseIdleSeconds = idleSeconds;
+
+        Dispatcher.UIThread.Post(() =>
+        {
+            PendingSyncCount = pendingSync.ToString();
+            LastSyncText = pendingSync == 0 ? "All records synced" : $"Pending upload: {pendingSync}";
+            UpdateLiveTotals();
+        });
+    }
+
+    private void UpdateLiveTotals()
+    {
+        ActivitySnapshot snapshot = _tracker.GetLiveSnapshot();
+        DateTime now = DateTime.Now;
+
+        double productiveSeconds = _todayBaseProductiveSeconds;
+        double idleSeconds = _todayBaseIdleSeconds;
+
+        if (snapshot.IsTracking && snapshot.IsWithinWorkHours)
+        {
+            DateTime segmentStart = snapshot.SegmentStart < DateTime.Today
+                ? DateTime.Today
+                : snapshot.SegmentStart;
+
+            double liveSeconds = Math.Max(0, (now - segmentStart).TotalSeconds);
+
+            if (snapshot.IsIdle)
+            {
+                idleSeconds += liveSeconds;
+            }
+            else if (!string.IsNullOrWhiteSpace(snapshot.CurrentWindowTitle))
+            {
+                productiveSeconds += liveSeconds;
+            }
+        }
+
+        TodayTotalTime = FormatDuration(productiveSeconds);
+        AttendanceClockText = FormatClock(productiveSeconds);
+        IdleTotalTime = FormatDuration(idleSeconds);
     }
 
     private static string FormatDuration(double seconds)
@@ -449,6 +493,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     public void Dispose()
     {
         _summaryTimer.Stop();
+        _liveTimer.Stop();
         _tracker.Dispose();
     }
 }

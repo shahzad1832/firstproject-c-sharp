@@ -15,12 +15,14 @@ public sealed class ActivityTracker : IDisposable
     private readonly string _screenshotFolder;
     private readonly Timer _timer;
     private readonly Random _random = new();
+    private readonly object _stateLock = new();
 
     private string _lastWindowTitle = string.Empty;
     private DateTime _startTime;
     private DateTime _nextScreenshotCapture;
     private bool _isTracking;
     private bool _isIdle;
+    private bool _isWithinWorkHours;
 
     public ActivityTracker(
         IPlatformActivityMonitor platformActivityMonitor,
@@ -45,6 +47,26 @@ public sealed class ActivityTracker : IDisposable
 
     public bool IsTracking => _isTracking;
 
+    public ActivitySnapshot GetLiveSnapshot()
+    {
+        lock (_stateLock)
+        {
+            string recordType = string.Empty;
+            if (!string.IsNullOrWhiteSpace(_lastWindowTitle))
+            {
+                recordType = _isIdle ? "Idle" : "Activity";
+            }
+
+            return new ActivitySnapshot(
+                _isTracking,
+                _isIdle,
+                _isWithinWorkHours,
+                _startTime,
+                _lastWindowTitle,
+                recordType);
+        }
+    }
+
     public void Start()
     {
         if (_isTracking)
@@ -60,10 +82,16 @@ public sealed class ActivityTracker : IDisposable
             return;
         }
 
-        _isTracking = true;
-        _lastWindowTitle = string.Empty;
-        _startTime = DateTime.Now;
-        _nextScreenshotCapture = CalculateNextScreenshotTime();
+        DateTime now = DateTime.Now;
+        lock (_stateLock)
+        {
+            _isTracking = true;
+            _lastWindowTitle = string.Empty;
+            _startTime = now;
+            _nextScreenshotCapture = CalculateNextScreenshotTime();
+            _isIdle = false;
+            _isWithinWorkHours = IsWithinWorkHours(now);
+        }
         _timer.Start();
         TrackingStateChanged?.Invoke(true);
     }
@@ -77,23 +105,45 @@ public sealed class ActivityTracker : IDisposable
 
         _timer.Stop();
         SavePendingRecord();
-        _lastWindowTitle = string.Empty;
-        _isIdle = false;
-        _isTracking = false;
+        lock (_stateLock)
+        {
+            _lastWindowTitle = string.Empty;
+            _isIdle = false;
+            _isTracking = false;
+            _isWithinWorkHours = false;
+        }
         TrackingStateChanged?.Invoke(false);
     }
 
     private void OnTimerElapsed(object sender, ElapsedEventArgs e)
     {
-        if (!_isTracking)
+        bool isTracking;
+        lock (_stateLock)
+        {
+            isTracking = _isTracking;
+        }
+
+        if (!isTracking)
         {
             return;
         }
 
-        if (!IsWithinWorkHours(DateTime.Now))
+        DateTime now = DateTime.Now;
+        bool withinWorkHours = IsWithinWorkHours(now);
+        lock (_stateLock)
+        {
+            _isWithinWorkHours = withinWorkHours;
+        }
+
+        if (!withinWorkHours)
         {
             SavePendingRecord();
-            _lastWindowTitle = string.Empty;
+            lock (_stateLock)
+            {
+                _lastWindowTitle = string.Empty;
+                _isIdle = false;
+                _startTime = now;
+            }
             CurrentWindowChanged?.Invoke("Outside working hours");
             StatusChanged?.Invoke(null);
             return;
@@ -101,16 +151,25 @@ public sealed class ActivityTracker : IDisposable
 
         TimeSpan idleTime = _idleTimeProvider.GetIdleTime();
         bool isIdle = idleTime.TotalSeconds >= _settings.IdleThresholdSeconds;
+        bool wasIdle;
+
+        lock (_stateLock)
+        {
+            wasIdle = _isIdle;
+        }
 
         if (isIdle)
         {
-            if (!_isIdle)
+            if (!wasIdle)
             {
-                DateTime idleStartTime = DateTime.Now - idleTime;
+                DateTime idleStartTime = now - idleTime;
                 SavePendingRecord(idleStartTime);
-                _lastWindowTitle = "Idle";
-                _startTime = idleStartTime;
-                _isIdle = true;
+                lock (_stateLock)
+                {
+                    _lastWindowTitle = "Idle";
+                    _startTime = idleStartTime;
+                    _isIdle = true;
+                }
                 CurrentWindowChanged?.Invoke("Idle");
             }
 
@@ -118,13 +177,16 @@ public sealed class ActivityTracker : IDisposable
             return;
         }
 
-        if (_isIdle)
+        if (wasIdle)
         {
             SavePendingRecord();
-            _lastWindowTitle = string.Empty;
-            _isIdle = false;
-            _startTime = DateTime.Now;
-            _nextScreenshotCapture = CalculateNextScreenshotTime();
+            lock (_stateLock)
+            {
+                _lastWindowTitle = string.Empty;
+                _isIdle = false;
+                _startTime = now;
+                _nextScreenshotCapture = CalculateNextScreenshotTime();
+            }
         }
 
         string currentWindow = _platformActivityMonitor.GetActiveWindowTitle();
@@ -132,24 +194,39 @@ public sealed class ActivityTracker : IDisposable
         string lastError = _platformActivityMonitor.LastError;
         StatusChanged?.Invoke(string.IsNullOrWhiteSpace(lastError) ? null : lastError);
 
-        if (!string.Equals(currentWindow, _lastWindowTitle, StringComparison.Ordinal))
+        string lastWindowTitle;
+        lock (_stateLock)
+        {
+            lastWindowTitle = _lastWindowTitle;
+        }
+
+        if (!string.Equals(currentWindow, lastWindowTitle, StringComparison.Ordinal))
         {
             SavePendingRecord();
-            _lastWindowTitle = currentWindow;
-            _startTime = DateTime.Now;
+            lock (_stateLock)
+            {
+                _lastWindowTitle = currentWindow;
+                _startTime = now;
+            }
         }
 
         CurrentWindowChanged?.Invoke(currentWindow);
 
-        if (_settings.ScreenshotsEnabled && DateTime.Now >= _nextScreenshotCapture)
+        DateTime nextScreenshotCapture;
+        lock (_stateLock)
+        {
+            nextScreenshotCapture = _nextScreenshotCapture;
+        }
+
+        if (_settings.ScreenshotsEnabled && now >= nextScreenshotCapture)
         {
             string screenshotPath = _platformActivityMonitor.CaptureScreenshot(_screenshotFolder);
             if (!string.IsNullOrWhiteSpace(screenshotPath))
             {
                 _repository.AddRecord(CreateRecord(
                     $"Screenshot - {currentWindow}",
-                    DateTime.Now,
-                    DateTime.Now,
+                    now,
+                    now,
                     0,
                     "Screenshot",
                     screenshotPath));
@@ -160,11 +237,17 @@ public sealed class ActivityTracker : IDisposable
                 StatusChanged?.Invoke(_platformActivityMonitor.LastError);
             }
 
-            _nextScreenshotCapture = CalculateNextScreenshotTime();
+            lock (_stateLock)
+            {
+                _nextScreenshotCapture = CalculateNextScreenshotTime();
+            }
         }
-        else if (!_settings.ScreenshotsEnabled && DateTime.Now >= _nextScreenshotCapture)
+        else if (!_settings.ScreenshotsEnabled && now >= nextScreenshotCapture)
         {
-            _nextScreenshotCapture = CalculateNextScreenshotTime();
+            lock (_stateLock)
+            {
+                _nextScreenshotCapture = CalculateNextScreenshotTime();
+            }
         }
     }
 
@@ -192,24 +275,33 @@ public sealed class ActivityTracker : IDisposable
 
     private void SavePendingRecord(DateTime? endTimeOverride = null)
     {
-        if (string.IsNullOrWhiteSpace(_lastWindowTitle))
+        string lastWindowTitle;
+        DateTime startTime;
+
+        lock (_stateLock)
+        {
+            lastWindowTitle = _lastWindowTitle;
+            startTime = _startTime;
+        }
+
+        if (string.IsNullOrWhiteSpace(lastWindowTitle))
         {
             return;
         }
 
         DateTime endTime = endTimeOverride ?? DateTime.Now;
-        string recordType = string.Equals(_lastWindowTitle, "Idle", StringComparison.Ordinal)
+        string recordType = string.Equals(lastWindowTitle, "Idle", StringComparison.Ordinal)
             ? "Idle"
             : "Activity";
 
-        if (endTime <= _startTime)
+        if (endTime <= startTime)
         {
             return;
         }
 
         if (string.Equals(recordType, "Idle", StringComparison.Ordinal))
         {
-            double idleSeconds = (endTime - _startTime).TotalSeconds;
+            double idleSeconds = (endTime - startTime).TotalSeconds;
             if (idleSeconds < _settings.IdleThresholdSeconds)
             {
                 return;
@@ -217,10 +309,10 @@ public sealed class ActivityTracker : IDisposable
         }
 
         _repository.AddRecord(CreateRecord(
-            _lastWindowTitle,
-            _startTime,
+            lastWindowTitle,
+            startTime,
             endTime,
-            (endTime - _startTime).TotalSeconds,
+            (endTime - startTime).TotalSeconds,
             recordType));
     }
 
@@ -253,4 +345,30 @@ public sealed class ActivityTracker : IDisposable
     {
         _timer.Dispose();
     }
+}
+
+public readonly struct ActivitySnapshot
+{
+    public ActivitySnapshot(
+        bool isTracking,
+        bool isIdle,
+        bool isWithinWorkHours,
+        DateTime segmentStart,
+        string currentWindowTitle,
+        string recordType)
+    {
+        IsTracking = isTracking;
+        IsIdle = isIdle;
+        IsWithinWorkHours = isWithinWorkHours;
+        SegmentStart = segmentStart;
+        CurrentWindowTitle = currentWindowTitle ?? string.Empty;
+        RecordType = recordType ?? string.Empty;
+    }
+
+    public bool IsTracking { get; }
+    public bool IsIdle { get; }
+    public bool IsWithinWorkHours { get; }
+    public DateTime SegmentStart { get; }
+    public string CurrentWindowTitle { get; }
+    public string RecordType { get; }
 }
