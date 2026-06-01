@@ -138,8 +138,6 @@
                 <TabItem Header="Time Tracking">
                     <Grid RowDefinitions="Auto, Auto, *">
                         <StackPanel Grid.Row="0" Margin="18,12,18,10" Spacing="10">
-
-
                             <TextBlock Text="{Binding AttendanceClockText}"
                                        FontSize="31"
                                        FontWeight="SemiBold"
@@ -221,7 +219,6 @@
 
                                         <StackPanel Grid.Column="3"
                                                     HorizontalAlignment="Center">
-
                                             <TextBlock Text="Idle Time"
                                                        Foreground="{StaticResource MutedBrush}"
                                                        FontSize="9" Margin="0,0,0,4"/>

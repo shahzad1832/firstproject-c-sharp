@@ -87,7 +87,7 @@ public partial class App : Application
         return null;
     }
 
-    public void TrayShow_Click(object sender, EventArgs e)
+    public void TrayShow_Click(object? sender, EventArgs e)
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -96,7 +96,7 @@ public partial class App : Application
         }
     }
 
-    public void TrayStart_Click(object sender, EventArgs e)
+    public void TrayStart_Click(object? sender, EventArgs e)
     {
         var viewModel = GetViewModel();
         if (viewModel != null && !viewModel.IsTracking)
@@ -105,7 +105,7 @@ public partial class App : Application
         }
     }
 
-    public void TrayStop_Click(object sender, EventArgs e)
+    public void TrayStop_Click(object? sender, EventArgs e)
     {
         var viewModel = GetViewModel();
         if (viewModel != null && viewModel.IsTracking)
@@ -114,7 +114,7 @@ public partial class App : Application
         }
     }
 
-    public void TrayExit_Click(object sender, EventArgs e)
+    public void TrayExit_Click(object? sender, EventArgs e)
     {
         IsExitRequested = true;
         _trayIcon?.Dispose();

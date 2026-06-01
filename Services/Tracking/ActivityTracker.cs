@@ -74,6 +74,14 @@ public sealed class ActivityTracker : IDisposable
             return;
         }
 
+        DateTime now = DateTime.Now;
+        if (!IsWithinWorkHours(now))
+        {
+            StatusChanged?.Invoke("Outside working hours");
+            TrackingStateChanged?.Invoke(false);
+            return;
+        }
+
         if (!_platformActivityMonitor.HasRequiredPermissions() &&
             !_platformActivityMonitor.RequestPermissions())
         {
@@ -82,7 +90,6 @@ public sealed class ActivityTracker : IDisposable
             return;
         }
 
-        DateTime now = DateTime.Now;
         lock (_stateLock)
         {
             _isTracking = true;
@@ -137,13 +144,7 @@ public sealed class ActivityTracker : IDisposable
 
         if (!withinWorkHours)
         {
-            SavePendingRecord();
-            lock (_stateLock)
-            {
-                _lastWindowTitle = string.Empty;
-                _isIdle = false;
-                _startTime = now;
-            }
+            Stop();
             CurrentWindowChanged?.Invoke("Outside working hours");
             StatusChanged?.Invoke(null);
             return;

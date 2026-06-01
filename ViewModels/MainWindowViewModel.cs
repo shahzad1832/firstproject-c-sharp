@@ -23,8 +23,10 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private readonly AppSettings _settings;
     private readonly DispatcherTimer _summaryTimer;
     private readonly DispatcherTimer _liveTimer;
+    private readonly DispatcherTimer _workdayTimer;
     private double _todayBaseProductiveSeconds;
     private double _todayBaseIdleSeconds;
+    private bool _manualPause;
 
     public ObservableCollection<HistoryDayGroup> HistoryItems { get; } = new();
     public ObservableCollection<ActivityRecord> TodayScreenshots { get; } = new();
@@ -279,6 +281,13 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         _liveTimer.Tick += (_, _) => UpdateLiveTotals();
         _liveTimer.Start();
 
+        _workdayTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(10)
+        };
+        _workdayTimer.Tick += (_, _) => EnsureTrackingWithinWorkHours();
+        _workdayTimer.Start();
+
         _tracker.Start();
         _ = RefreshHistoryAsync();
     }
@@ -297,14 +306,36 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     private void StartTracking()
     {
+        _manualPause = false;
         _tracker.Start();
         UpdateLiveTotals();
     }
 
     private void StopTracking()
     {
+        _manualPause = true;
         _tracker.Stop();
         _ = UpdateBaseTotalsAsync();
+    }
+
+    private void EnsureTrackingWithinWorkHours()
+    {
+        if (!IsWithinWorkHours(DateTime.Now))
+        {
+            _manualPause = false;
+            return;
+        }
+
+        if (_manualPause)
+        {
+            return;
+        }
+
+        if (!_tracker.IsTracking)
+        {
+            _tracker.Start();
+            UpdateLiveTotals();
+        }
     }
 
     private void AddNewTask()
@@ -415,6 +446,23 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         });
     }
 
+    private bool IsWithinWorkHours(DateTime now)
+    {
+        if (!TimeSpan.TryParse(_settings.WorkdayStart, out var start) ||
+            !TimeSpan.TryParse(_settings.WorkdayEnd, out var end))
+        {
+            return true;
+        }
+
+        TimeSpan current = now.TimeOfDay;
+        if (start <= end)
+        {
+            return current >= start && current <= end;
+        }
+
+        return current >= start || current <= end;
+    }
+
     private void UpdateLiveTotals()
     {
         ActivitySnapshot snapshot = _tracker.GetLiveSnapshot();
@@ -472,7 +520,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         int hours = totalSeconds / 3600;
         int minutes = (totalSeconds % 3600) / 60;
         int remainingSeconds = totalSeconds % 60;
-        return $"{hours:00}:{minutes:00}:{remainingSeconds:00} h";
+        return $"{hours:00}:{minutes:00}:{remainingSeconds:00} s";
     }
 
     private async Task RefreshScreenshotsAsync()
@@ -494,6 +542,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     {
         _summaryTimer.Stop();
         _liveTimer.Stop();
+        _workdayTimer.Stop();
         _tracker.Dispose();
     }
 }
