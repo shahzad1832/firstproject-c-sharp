@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "YuUX1B6C06Q=",
+  "dgSpecHash": "3iPBmQ5/Avk=",
   "success": true,
   "projectFilePath": "/Users/leads-lp-02/DotNetProject/firstproject-c-sharp/firstProject.csproj",
   "expectedPackageFiles": [
@@ -55,7 +55,9 @@
     "/Users/leads-lp-02/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.1.11/sqlitepclraw.lib.e_sqlite3.2.1.11.nupkg.sha512",
     "/Users/leads-lp-02/.nuget/packages/sqlitepclraw.provider.e_sqlite3/2.1.11/sqlitepclraw.provider.e_sqlite3.2.1.11.nupkg.sha512",
     "/Users/leads-lp-02/.nuget/packages/system.drawing.common/10.0.0/system.drawing.common.10.0.0.nupkg.sha512",
-    "/Users/leads-lp-02/.nuget/packages/tmds.dbus.protocol/0.92.0/tmds.dbus.protocol.0.92.0.nupkg.sha512"
+    "/Users/leads-lp-02/.nuget/packages/tmds.dbus.protocol/0.92.0/tmds.dbus.protocol.0.92.0.nupkg.sha512",
+    "/Users/leads-lp-02/.nuget/packages/microsoft.netcore.app.runtime.osx-arm64/10.0.8/microsoft.netcore.app.runtime.osx-arm64.10.0.8.nupkg.sha512",
+    "/Users/leads-lp-02/.nuget/packages/microsoft.aspnetcore.app.runtime.osx-arm64/10.0.8/microsoft.aspnetcore.app.runtime.osx-arm64.10.0.8.nupkg.sha512"
   ],
   "logs": []
 }

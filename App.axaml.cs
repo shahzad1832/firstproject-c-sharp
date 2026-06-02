@@ -48,7 +48,7 @@ public partial class App : Application
             return;
         }
 
-        var iconUri = new Uri("avares://firstProject/Assets/assign.png");
+        var iconUri = new Uri("avares://AssignIn/Assets/assign.png");
         var icon = new WindowIcon(AssetLoader.Open(iconUri));
 
         _trayIcon = new TrayIcon

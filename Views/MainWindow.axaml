@@ -6,7 +6,7 @@
         x:Class="firstProject.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="Assign In"
-        Icon="avares://firstProject/Assets/assign.png"
+        Icon="avares://AssignIn/Assets/assign.png"
         Width="300"
         Height="560"
         MinWidth="300"
@@ -115,7 +115,7 @@
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="4">
                         <Grid Height="15"  Margin="0,0,4,0" >
-                            <Image Source="avares://firstProject/Assets/assign.png"></Image>
+                            <Image Source="avares://AssignIn/Assets/assign.png"></Image>
                         </Grid>
                         <TextBlock Text="Assign In" FontSize="14" FontWeight="SemiBold" TextAlignment="Center" />
 

@@ -3,14 +3,16 @@ set -euo pipefail
 
 CONFIGURATION="${1:-Release}"
 RUNTIME_ID="${2:-osx-arm64}"
-APP_NAME="firstProject"
-BUNDLE_ID="com.firstproject.app"
+APP_NAME="AssignIn"
+BUNDLE_ID="com.assignin.app"
 VERSION="1.0.0"
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+INFO_PLIST_TEMPLATE="$PROJECT_ROOT/Info.plist"
 HELPER_SOURCE="$PROJECT_ROOT/scripts/active_window.swift"
 HELPER_BUILD_SCRIPT="$PROJECT_ROOT/scripts/build-active-window-helper.sh"
 HELPER_BIN="$PROJECT_ROOT/active_window_detector"
+ICON_SOURCE="$PROJECT_ROOT/Assets/assign.icns"
 PUBLISH_DIR="$PROJECT_ROOT/bin/$CONFIGURATION/net10.0/$RUNTIME_ID/publish"
 APP_DIR="$PUBLISH_DIR/$APP_NAME.app"
 MACOS_DIR="$APP_DIR/Contents/MacOS"
@@ -51,7 +53,21 @@ done
 
 ditto "$HELPER_BIN" "$MACOS_DIR/active_window_detector"
 
-cat > "$APP_DIR/Contents/Info.plist" <<EOF
+if [[ -f "$ICON_SOURCE" ]]; then
+  ditto "$ICON_SOURCE" "$RESOURCES_DIR/assign.icns"
+else
+  echo "Icon not found: $ICON_SOURCE"
+fi
+
+if [[ -f "$INFO_PLIST_TEMPLATE" ]]; then
+  # Substitute tokens from the template so bundle metadata stays in sync.
+  sed \
+    -e "s/__APP_NAME__/$APP_NAME/g" \
+    -e "s/__BUNDLE_ID__/$BUNDLE_ID/g" \
+    -e "s/__VERSION__/$VERSION/g" \
+    "$INFO_PLIST_TEMPLATE" > "$APP_DIR/Contents/Info.plist"
+else
+  cat > "$APP_DIR/Contents/Info.plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -79,6 +95,7 @@ cat > "$APP_DIR/Contents/Info.plist" <<EOF
 </dict>
 </plist>
 EOF
+fi
 
 cat > "$ENTITLEMENTS_PATH" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
